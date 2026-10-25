@@ -1,0 +1,20 @@
+# Downloaded and processed data
+data/raw/
+data/processed/
+*.nc
+*.npz
+*.zip
+
+# Python and notebooks
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.venv/
+
+# Model outputs
+results/preds/
+*.pt
+*.ckpt
+
+# OS
+.DS_Store
