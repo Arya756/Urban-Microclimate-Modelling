@@ -9,6 +9,6 @@ Downloads the UrbanTALES case files and checks their integrity.
 
 ## Contents
 
-| File | Author | Description |
-| --- | --- | --- |
-| `download_urbantales.py` | Mahir (mahir-m01) | Parallel download of all case files from the direct links in `data/catalog.csv`, with retries, a socket timeout and resume support |
+| File | Description |
+| --- | --- |
+| `download_urbantales.py` | Parallel download of all case files from the direct links in `data/catalog.csv`, with retries, a socket timeout and resume support |

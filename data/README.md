@@ -2,8 +2,6 @@
 
 This folder holds descriptive tables for the UrbanTALES dataset (Nazarian et al., 2025). The simulation fields themselves are not stored here; they are downloaded into `data/raw/` (not tracked) by `pipeline/S01_data_ingestion/download_urbantales.py`.
 
-Tables compiled by Mahir (mahir-m01) from the UrbanTALES website and metadata sheet.
-
 | File | Contents |
 | --- | --- |
 | `catalog.csv` | One row per simulation case (538 rows). Holds the direct download link and size for each case file, case descriptors (subset, city, country, layout, height mode, density class, wind direction from the case name) and `split_group`, the city or layout family used for grouped data splits. |
