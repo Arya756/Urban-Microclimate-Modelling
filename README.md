@@ -32,7 +32,7 @@ Each case provides:
 - horizontally averaged vertical profiles;
 - the simulation configuration.
 
-The data is distributed by its authors under CC BY-NC 4.0 and is not redistributed in this repository.
+The data is distributed by its authors under CC BY-NC 4.0. The simulation fields are not redistributed in this repository; `data/` holds only the case catalog and the official per-case metadata table.
 
 ## Approach
 
@@ -54,7 +54,7 @@ All models are evaluated with grouped cross-validation, so that entire cities an
 ```text
 Urban-Microclimate-Modelling/
 ├── README.md
-├── data/                             case catalog; raw and processed data are not tracked
+├── data/                             case catalog, metadata and download script; raw and processed data are not tracked
 ├── src/mmnscfd/                      shared data, feature, metric and model code
 ├── pipeline/
 │   ├── S00_setup/
