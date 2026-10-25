@@ -18,7 +18,9 @@ import json
 import pathlib
 from typing import Any
 
-SPLITS_PATH = pathlib.Path(__file__).parents[3] / "data" / "splits.json"
+_p2 = pathlib.Path(__file__).parents[2] / "data" / "splits.json"
+_p3 = pathlib.Path(__file__).parents[3] / "data" / "splits.json"
+SPLITS_PATH = _p2 if _p2.exists() else _p3
 
 
 # ---------------------------------------------------------------------------
