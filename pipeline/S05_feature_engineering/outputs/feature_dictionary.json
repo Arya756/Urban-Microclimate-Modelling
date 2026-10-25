@@ -1,0 +1,236 @@
+[
+  {
+    "feature_name": "nx",
+    "category": "domain_geometry",
+    "type": "integer",
+    "units": "cells",
+    "level": "case",
+    "description": "Number of grid cells in the horizontal x-direction",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "ny",
+    "category": "domain_geometry",
+    "type": "integer",
+    "units": "cells",
+    "level": "case",
+    "description": "Number of grid cells in the horizontal y-direction",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "dx",
+    "category": "domain_geometry",
+    "type": "float",
+    "units": "m",
+    "level": "case",
+    "description": "Grid spacing in x-direction (0.5m for idealized, 1.0m for realistic)",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "domain_area_m2",
+    "category": "domain_geometry",
+    "type": "float",
+    "units": "m2",
+    "level": "case",
+    "description": "Total horizontal domain footprint area (Lx * Ly)",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "lambda_p",
+    "category": "morphology",
+    "type": "float",
+    "units": "dimensionless",
+    "level": "case",
+    "description": "Plan-area density: ratio of building footprint area to total domain area",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "mean_h",
+    "category": "height_distribution",
+    "type": "float",
+    "units": "m",
+    "level": "case",
+    "description": "Mean building height evaluated strictly across building cells (H > 0)",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "std_h",
+    "category": "height_distribution",
+    "type": "float",
+    "units": "m",
+    "level": "case",
+    "description": "Standard deviation of building height across building cells",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "max_h",
+    "category": "height_distribution",
+    "type": "float",
+    "units": "m",
+    "level": "case",
+    "description": "Maximum building elevation in the domain",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "cv_h",
+    "category": "height_distribution",
+    "type": "float",
+    "units": "dimensionless",
+    "level": "case",
+    "description": "Building height coefficient of variation (std_h / mean_h)",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "total_volume_m3",
+    "category": "morphology",
+    "type": "float",
+    "units": "m3",
+    "level": "case",
+    "description": "Total building volume integrated over the domain",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "volume_per_area_m",
+    "category": "morphology",
+    "type": "float",
+    "units": "m",
+    "level": "case",
+    "description": "Canopy volume per unit ground area (mean canopy depth = lambda_p * mean_h)",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "lambda_f_dir",
+    "category": "frontal_area",
+    "type": "float",
+    "units": "dimensionless",
+    "level": "case",
+    "description": "Projected frontal-area density in the physical wind forcing direction",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "lambda_w",
+    "category": "wall_area",
+    "type": "float",
+    "units": "dimensionless",
+    "level": "case",
+    "description": "Total vertical wall facade area per unit ground area (2 * (lambda_fx + lambda_fy))",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "windward_wall_share",
+    "category": "orientation",
+    "type": "float",
+    "units": "dimensionless",
+    "level": "case",
+    "description": "Fraction of total wall facade area exposed directly to incoming flow",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "d_macdonald_m",
+    "category": "aerodynamics",
+    "type": "float",
+    "units": "m",
+    "level": "case",
+    "description": "Zero-plane displacement height via Macdonald et al. (1998)",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "z0_macdonald_m",
+    "category": "aerodynamics",
+    "type": "float",
+    "units": "m",
+    "level": "case",
+    "description": "Aerodynamic roughness length via Macdonald et al. (1998)",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "d_kanda_m",
+    "category": "aerodynamics",
+    "type": "float",
+    "units": "m",
+    "level": "case",
+    "description": "Zero-plane displacement height adjusted for height variability via Kanda et al. (2013)",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "d_over_hmax_kanda",
+    "category": "aerodynamics",
+    "type": "float",
+    "units": "dimensionless",
+    "level": "case",
+    "description": "Dimensionless zero-plane displacement height ratio (d / H_max) via Kanda et al. (2013)",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "z0_kanda_m",
+    "category": "aerodynamics",
+    "type": "float",
+    "units": "m",
+    "level": "case",
+    "description": "Aerodynamic roughness length adjusted for height variability via Kanda et al. (2013)",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "z0_over_hmax_kanda",
+    "category": "aerodynamics",
+    "type": "float",
+    "units": "dimensionless",
+    "level": "case",
+    "description": "Dimensionless aerodynamic roughness length ratio (z0 / H_max) via Kanda et al. (2013)",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "dist_mean_m",
+    "category": "spatial_distance",
+    "type": "float",
+    "units": "m",
+    "level": "case",
+    "description": "Mean periodic Euclidean distance to nearest building across open fluid cells",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "upwind_fetch_mean_m",
+    "category": "directional_fetch",
+    "type": "float",
+    "units": "m",
+    "level": "case",
+    "description": "Mean upwind unobstructed fetch distance (capped at 150m) across open fluid cells",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "upwind_h_1_10m",
+    "category": "directional_fetch",
+    "type": "float",
+    "units": "m",
+    "level": "pixel",
+    "description": "Maximum upwind building height within 1-10m radius band along flow trajectory",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "upwind_h_11_30m",
+    "category": "directional_fetch",
+    "type": "float",
+    "units": "m",
+    "level": "pixel",
+    "description": "Maximum upwind building height within 11-30m radius band along flow trajectory",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "upwind_h_31_60m",
+    "category": "directional_fetch",
+    "type": "float",
+    "units": "m",
+    "level": "pixel",
+    "description": "Maximum upwind building height within 31-60m radius band along flow trajectory",
+    "validation_status": "validated"
+  },
+  {
+    "feature_name": "pixel_tensor",
+    "category": "spatial_deep_learning",
+    "type": "tensor",
+    "units": "mixed",
+    "level": "pixel",
+    "description": "22-channel aligned spatial feature tensor: ['building_height', 'fluid_mask', 'dist_to_building', 'lambda_p_8m', 'lambda_p_16m', 'lambda_p_32m', 'lambda_p_64m', 'h_mean_8m', 'h_mean_16m', 'h_mean_32m', 'h_mean_64m', 'upwind_fetch', 'downwind_fetch', 'lateral_left_fetch', 'lateral_right_fetch', 'upwind_h_1_10m', 'upwind_h_11_30m', 'upwind_h_31_60m', 'canyon_width', 'aspect_ratio_hw', 'wind_cos', 'wind_sin']",
+    "validation_status": "validated"
+  }
+]
