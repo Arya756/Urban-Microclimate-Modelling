@@ -1,7 +1,6 @@
 """Download the UrbanTALES case files listed in data/catalog.csv.
 
 Stage: S01 Data ingestion
-Author: Mahir (mahir-m01)
 
 Usage: python pipeline/S01_data_ingestion/download_urbantales.py [output_dir]
 
