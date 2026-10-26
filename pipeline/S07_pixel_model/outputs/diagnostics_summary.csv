@@ -1,0 +1,7 @@
+setting,subset,n_cases,median_per_case_r2,pooled_r2
+"random 80/20 split, held-out cases",idealized,35,0.4378,0.4478
+"random 80/20 split, held-out cases",realistic,61,0.2583,0.4478
+training cases (in-sample),idealized,14,0.7814,0.6579
+training cases (in-sample),realistic,26,0.3712,0.6579
+"random 80/20 split, held-out cases",all,96,0.3168,0.4478
+training cases (in-sample),all,40,0.5165,0.6579

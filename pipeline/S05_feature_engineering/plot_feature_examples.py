@@ -16,9 +16,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from pipeline.S05_feature_engineering.config import DEFAULT_CONFIG
-from pipeline.S05_feature_engineering.feature_assembly import assemble_pixel_feature_tensor
 from urbanwind.data import case_path, load_topo, parse_p3d
+from urbanwind.features import DEFAULT_CONFIG, assemble_pixel_feature_tensor
 
 OUT = DEFAULT_CONFIG.output_dir
 

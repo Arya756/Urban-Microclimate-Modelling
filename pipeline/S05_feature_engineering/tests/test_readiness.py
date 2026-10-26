@@ -239,5 +239,5 @@ class TestRepositoryReadinessAndExclusions:
             test_cases = master_df[master_df["split_group"].isin(test_groups)]
 
             assert len(test_cases) == 53, f"Expected 53 frozen test cases, got {len(test_cases)}"
-            dev_ready = dev_cases[dev_cases["is_model_ready_spatial"] == True]
+            dev_ready = dev_cases[dev_cases["is_model_ready_spatial"].eq(True)]
             assert len(dev_ready) == 482, f"Expected 482 ready development cases, got {len(dev_ready)}"

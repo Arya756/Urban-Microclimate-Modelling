@@ -1,0 +1,16 @@
+variant,subset,n_cases,median_within_case_r2,mean_mae
+pixel_gbm_s05,all,476,0.2881,0.6289
+pixel_gbm_s05,idealized,190,0.4216,0.4106
+pixel_gbm_s05,realistic,286,0.2028,0.7738
+pixel_gbm,all,476,0.3243,0.6059
+pixel_gbm,idealized,190,0.4570,0.3846
+pixel_gbm,realistic,286,0.2518,0.7530
+hybrid_gbm,all,476,0.3288,0.6130
+hybrid_gbm,idealized,190,0.4776,0.3908
+hybrid_gbm,realistic,286,0.2532,0.7607
+level_s06c,all,476,-0.0090,0.8365
+level_s06c,idealized,190,-0.0034,0.6480
+level_s06c,realistic,286,-0.0183,0.9617
+level_oracle,all,476,0.0000,0.8158
+level_oracle,idealized,190,0.0000,0.6415
+level_oracle,realistic,286,0.0000,0.9316
