@@ -47,3 +47,6 @@ extend-exclude = ["*.ipynb"]
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "B"]
+# E402: scripts set sys.path before importing; E702, B905: style only;
+# B023: closures that are called inside the loop that defines them
+ignore = ["E402", "E702", "B905", "B023"]
