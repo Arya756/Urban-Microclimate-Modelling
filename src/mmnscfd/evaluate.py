@@ -29,7 +29,7 @@ import numpy as np
 import pandas as pd
 
 # Relative import from the same package
-from mmnscfd.metrics import case_metrics, pooled_metrics
+from mmnscfd.metrics import case_metrics, pooled_metrics, regression_metrics
 
 # ---------------------------------------------------------------------------
 # Default paths
@@ -55,16 +55,215 @@ RUNS_HEADER = [
 # Main evaluation logic
 # ---------------------------------------------------------------------------
 
-def evaluate_case_preds(pred_dir: pathlib.Path) -> list[dict]:
-    """Evaluate from case_preds.csv (case-level predictions)."""
-    csv_path = pred_dir / "case_preds.csv"
-    if not csv_path.exists():
-        raise FileNotFoundError(f"case_preds.csv not found in {pred_dir}")
+# ---------------------------------------------------------------------------
+# Main evaluation logic
+# ---------------------------------------------------------------------------
+
+def is_scalar_case_table(df: pd.DataFrame) -> bool:
+    """Determine whether a prediction table represents scalar case predictions
+    (at most one prediction per case per target) or flattened spatial field data
+    (multiple spatial cells per case for the same target).
+    """
+    if "target" in df.columns and "case" in df.columns:
+        return not df.duplicated(subset=["case", "target"]).any()
+    elif "case" in df.columns:
+        if df["case"].duplicated().any():
+            return False
+        has_wide_targets = any(c.endswith("_true") for c in df.columns)
+        has_long_targets = "y_true" in df.columns and "y_pred" in df.columns
+        return has_wide_targets or has_long_targets
+    return False
+
+
+def evaluate_scalar_preds(
+    pred_source: pathlib.Path | pd.DataFrame,
+    splits_path: pathlib.Path | None = None,
+) -> dict[str, Any]:
+    """Evaluate scalar case-level predictions across independent cases.
+
+    Parameters
+    ----------
+    pred_source : pathlib.Path or pd.DataFrame
+    splits_path : optional path to splits.json for frozen-test validation
+
+    Returns
+    -------
+    dict with keys:
+        mode: "scalar",
+        n_cases: int,
+        targets: dict of per-target metric results,
+        test_exclusion_verified: bool
+    """
+    if isinstance(pred_source, (str, pathlib.Path)):
+        p = pathlib.Path(pred_source)
+        if not p.exists():
+            raise FileNotFoundError(f"Prediction file not found: {p}")
+        df = pd.read_csv(p)
+    elif isinstance(pred_source, pd.DataFrame):
+        df = pred_source.copy()
+    else:
+        raise TypeError(f"Expected Path or DataFrame, got {type(pred_source)}")
+
+    if "case" not in df.columns:
+        raise ValueError(f"Scalar prediction table must contain 'case' column; got {list(df.columns)}")
+
+    # Detect format: Long format vs Wide format
+    wide_pairs = [
+        (c[:-5], c, c[:-5] + "_pred")
+        for c in df.columns
+        if c.endswith("_true") and c != "y_true" and (c[:-5] + "_pred") in df.columns
+    ]
+
+    target_results: dict[str, Any] = {}
+
+    if "y_true" in df.columns and "y_pred" in df.columns:
+        # Long format: case, [target], y_true, y_pred
+        targets = df["target"].unique() if "target" in df.columns else ["default"]
+
+        for tgt in targets:
+            sub_df = df[df["target"] == tgt] if "target" in df.columns else df
+            if sub_df["case"].duplicated().any():
+                dups = sub_df[sub_df["case"].duplicated()]["case"].tolist()
+                raise ValueError(f"Duplicate cases found in scalar predictions for target '{tgt}': {dups[:5]}")
+
+            y_t = sub_df["y_true"].values
+            y_p = sub_df["y_pred"].values
+            if not np.all(np.isfinite(y_t)):
+                raise ValueError(f"Non-finite values found in y_true for target '{tgt}'")
+            if not np.all(np.isfinite(y_p)):
+                raise ValueError(f"Non-finite values found in y_pred for target '{tgt}'")
+
+            overall_m = regression_metrics(y_t, y_p, target=str(tgt))
+            subsets_m = {}
+            if "subset" in sub_df.columns:
+                for sub_val in sub_df["subset"].dropna().unique():
+                    sub_mask = sub_df["subset"] == sub_val
+                    subsets_m[str(sub_val)] = regression_metrics(
+                        sub_df.loc[sub_mask, "y_true"].values,
+                        sub_df.loc[sub_mask, "y_pred"].values,
+                        target=f"{tgt}_{sub_val}",
+                    )
+
+            folds_m = {}
+            if "outer_fold" in sub_df.columns and sub_df["outer_fold"].notna().any():
+                for f_val in sorted(sub_df["outer_fold"].dropna().unique()):
+                    f_mask = sub_df["outer_fold"] == f_val
+                    folds_m[int(f_val)] = regression_metrics(
+                        sub_df.loc[f_mask, "y_true"].values,
+                        sub_df.loc[f_mask, "y_pred"].values,
+                        target=f"{tgt}_fold{f_val}",
+                    )
+
+            target_results[str(tgt)] = {
+                "overall": overall_m,
+                "subsets": subsets_m,
+                "folds": folds_m,
+                "cases": sub_df["case"].tolist(),
+            }
+        n_unique_cases = len(df["case"].unique())
+
+    elif wide_pairs:
+        # Wide format: each row is one case
+        if df["case"].duplicated().any():
+            dups = df[df["case"].duplicated()]["case"].tolist()
+            raise ValueError(f"Duplicate cases found in scalar wide-format predictions: {dups[:5]}")
+
+        for tgt_name, true_col, pred_col in wide_pairs:
+            y_t = df[true_col].values
+            y_p = df[pred_col].values
+            if not np.all(np.isfinite(y_t)):
+                raise ValueError(f"Non-finite values found in {true_col} for target '{tgt_name}'")
+            if not np.all(np.isfinite(y_p)):
+                raise ValueError(f"Non-finite values found in {pred_col} for target '{tgt_name}'")
+
+            overall_m = regression_metrics(y_t, y_p, target=tgt_name)
+            subsets_m: dict[str, Any] = {}
+            if "subset" in df.columns:
+                for sub_val in df["subset"].dropna().unique():
+                    sub_mask = df["subset"] == sub_val
+                    subsets_m[str(sub_val)] = regression_metrics(
+                        df.loc[sub_mask, true_col].values,
+                        df.loc[sub_mask, pred_col].values,
+                        target=f"{tgt_name}_{sub_val}",
+                    )
+
+            folds_m: dict[int, Any] = {}
+            if "outer_fold" in df.columns and df["outer_fold"].notna().any():
+                for f_val in sorted(df["outer_fold"].dropna().unique()):
+                    f_mask = df["outer_fold"] == f_val
+                    folds_m[int(f_val)] = regression_metrics(
+                        df.loc[f_mask, true_col].values,
+                        df.loc[f_mask, pred_col].values,
+                        target=f"{tgt_name}_fold{f_val}",
+                    )
+
+            target_results[tgt_name] = {
+                "overall": overall_m,
+                "subsets": subsets_m,
+                "folds": folds_m,
+                "cases": df["case"].tolist(),
+            }
+        n_unique_cases = len(df["case"].unique())
+    else:
+        raise ValueError(
+            f"Unrecognized prediction table schema. Expected 'y_true'/'y_pred' or '*_true'/'*_pred' columns; "
+            f"got: {list(df.columns)}"
+        )
+
+    # Validate frozen test group exclusion if split_group and splits.json are available
+    test_verified = False
+    s_path = splits_path or DEFAULT_SPLITS
+    if "split_group" in df.columns and s_path.exists():
+        try:
+            with open(s_path, "r", encoding="utf-8") as f:
+                s_data = json.load(f)
+            t_groups = set(s_data.get("test_groups", []))
+            dev_groups = set(df["split_group"].dropna())
+            overlap = dev_groups.intersection(t_groups)
+            if overlap:
+                raise AssertionError(f"Frozen test groups detected in evaluation data: {overlap}")
+            test_verified = True
+        except AssertionError:
+            raise
+        except Exception as e:
+            print(f"[WARN] Could not verify test exclusion: {e}")
+
+    return {
+        "mode": "scalar",
+        "n_cases": n_unique_cases,
+        "targets": target_results,
+        "test_exclusion_verified": test_verified,
+    }
+
+
+def evaluate_case_preds(
+    pred_dir: pathlib.Path,
+    splits_path: pathlib.Path | None = None,
+) -> dict[str, Any] | list[dict]:
+    """Evaluate from case_preds.csv (or nested_oof_predictions.csv / oof_preds.csv).
+
+    Automatically identifies whether the CSV represents scalar case predictions
+    (evaluated across independent cases per target) or flattened spatial field data
+    (evaluated within each case using spatial case_metrics).
+    """
+    csv_path = None
+    for fname in ["case_preds.csv", "nested_oof_predictions.csv", "oof_preds.csv"]:
+        if (pred_dir / fname).exists():
+            csv_path = pred_dir / fname
+            break
+
+    if csv_path is None:
+        raise FileNotFoundError(f"No prediction CSV found in {pred_dir}")
 
     df = pd.read_csv(csv_path)
+
+    if is_scalar_case_table(df):
+        return evaluate_scalar_preds(df, splits_path=splits_path)
+
+    # Legacy spatial field table flattened into CSV (e.g. multiple cells per case)
     required = {"case", "y_true", "y_pred"}
     if not required.issubset(df.columns):
-        raise ValueError(f"case_preds.csv must have columns {required}; got {list(df.columns)}")
+        raise ValueError(f"Flattened spatial prediction table must have columns {required}; got {list(df.columns)}")
 
     per_case = []
     for case, grp in df.groupby("case"):
@@ -164,6 +363,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="Path to runs.csv (default: results/runs.csv)")
     parser.add_argument("--config", default="",
                         help="Free-text config / hyperparameter summary")
+    parser.add_argument("--target", default=None,
+                        help="Target variable to log for multi-target scalar models (default: U_mean)")
     args = parser.parse_args(argv)
 
     pred_dir = args.pred_dir.expanduser().resolve()
@@ -172,14 +373,49 @@ def main(argv: list[str] | None = None) -> int:
     print(f"[evaluate] Scoring {pred_dir} (exp_id={exp_id})")
 
     # Try case-level first, then field-level
-    if (pred_dir / "case_preds.csv").exists():
-        per_case = evaluate_case_preds(pred_dir)
-        print(f"  Mode: case-level predictions ({len(per_case)} cases)")
+    has_csv = (
+        (pred_dir.is_file() and pred_dir.suffix == ".csv")
+        or (pred_dir / "case_preds.csv").exists()
+        or (pred_dir / "nested_oof_predictions.csv").exists()
+        or (pred_dir / "oof_preds.csv").exists()
+    )
+
+    if has_csv:
+        csv_file = pred_dir if pred_dir.is_file() else None
+        eval_result = evaluate_scalar_preds(csv_file or pred_dir, splits_path=args.splits) if (csv_file or is_scalar_case_table(pd.read_csv(csv_file or next(p for p in [pred_dir / "case_preds.csv", pred_dir / "nested_oof_predictions.csv", pred_dir / "oof_preds.csv"] if p.exists())))) else evaluate_case_preds(pred_dir, splits_path=args.splits)
+
+        if isinstance(eval_result, dict) and eval_result.get("mode") == "scalar":
+            targets = eval_result["targets"]
+            print(f"  Mode: scalar case-level predictions ({len(targets)} targets, {eval_result['n_cases']} cases)")
+            for tgt_name, tgt_data in targets.items():
+                m = tgt_data["overall"]
+                print(f"  Target: {tgt_name:10s} | R² = {m['r2']:.4f}, MAE = {m['mae']:.4f}, RMSE = {m['rmse']:.4f} (N={m['n']})")
+                for sub_name, sub_m in tgt_data.get("subsets", {}).items():
+                    print(f"    Subset {sub_name:9s}: R² = {sub_m['r2']:.4f}, MAE = {sub_m['mae']:.4f}, RMSE = {sub_m['rmse']:.4f} (N={sub_m['n']})")
+
+            # Determine primary target to log in runs.csv
+            target_to_log = args.target if args.target and args.target in targets else ("U_mean" if "U_mean" in targets else list(targets.keys())[0])
+            primary_m = targets[target_to_log]["overall"]
+            pooled = {
+                "n_cases": primary_m["n"],
+                "pooled_mae": primary_m["mae"],
+                "pooled_rmse": primary_m["rmse"],
+                "pooled_r2": primary_m["r2"],
+                "median_nrmse": primary_m["rmse"] / primary_m["mean_true"] if primary_m["mean_true"] > 0 else float("nan"),
+                "median_ssim": float("nan"),  # Non-applicable for scalar case models
+                "mean_delta_p95": float("nan"),
+                "mean_delta_max": float("nan"),
+                "mean_level_err": float((primary_m["mean_pred"] - primary_m["mean_true"]) ** 2),
+                "mean_pattern_err": float("nan"),
+            }
+        else:
+            per_case = eval_result
+            print(f"  Mode: flattened spatial field predictions ({len(per_case)} cases)")
+            pooled = pooled_metrics(per_case)
     else:
         per_case = evaluate_field_preds(pred_dir)
         print(f"  Mode: field predictions ({len(per_case)} cases)")
-
-    pooled = pooled_metrics(per_case)
+        pooled = pooled_metrics(per_case)
 
     row = {
         "exp_id": exp_id,

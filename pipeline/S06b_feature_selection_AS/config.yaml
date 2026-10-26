@@ -1,0 +1,41 @@
+# Configuration for S06b Feature Selection & PCA Experiments
+# Repository: Urban-Microclimate-Modelling
+# Stage: S06b
+
+random_seed: 42
+
+paths:
+  features: "pipeline/S05_feature_engineering/outputs/case_features.csv"
+  target_table: "pipeline/S04_eda/S04g_combined_report/master_case_table.csv"
+  splits: "data/splits.json"
+  output_dir: "pipeline/S06b_feature_selection_AS/outputs"
+  plots_dir: "pipeline/S06b_feature_selection_AS/outputs/plots"
+
+targets:
+  primary: "U_mean"
+  secondary: "U_p95"
+
+model:
+  n_estimators: 400
+  learning_rate: 0.05
+  random_state: 42
+  n_jobs: -1
+  verbosity: -1
+
+cv:
+  n_outer_folds: 5
+  n_inner_folds: 3
+
+filter_methods:
+  correlation_threshold: 0.95
+  mi_k_values: [10, 15, 20]
+  f_test_k_values: [10, 15, 20]
+
+wrapper:
+  estimator_n_estimators: 100
+  step: 1
+  min_features: 5
+  scoring: "r2"
+
+pca:
+  variance_thresholds: [0.90, 0.95, 0.99]

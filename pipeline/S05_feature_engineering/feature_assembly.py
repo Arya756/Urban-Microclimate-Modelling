@@ -252,6 +252,7 @@ def assemble_pixel_feature_tensor(
 def load_normalized_target(
     ped_path: str | pathlib.Path,
     u_tau: float,
+    topo_H: Optional[np.ndarray] = None,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Load pedestrian-level target velocity and turbulence fields normalized by u_tau.
 
@@ -264,13 +265,28 @@ def load_normalized_target(
         Path to <case>_ped.nc file.
     u_tau : float
         Friction velocity for this case.
+    topo_H : np.ndarray, optional
+        2D building height array (Ny, Nx), already corrected for row orientation
+        via np.flipud (Issue 1 fix).  When provided, cells where topo_H > 0 are
+        unconditionally treated as building cells and excluded from valid_mask,
+        regardless of whether _ped.nc stores NaN, zero, or a spurious finite value
+        at that location.  Legitimate zero-valued wind targets on open ground
+        (topo_H == 0) are correctly preserved.
+        163 cases (160 realistic, 3 idealized) contain CFD grid-staggering
+        artefacts: sub-grid interpolation leaks finite wind values into
+        building-perimeter cells even though those cells are inside buildings
+        according to the topography. Without topo_H the NaN-only mask incorrectly
+        includes 1,141,511 such cells as valid targets across the full dataset.
+        When topo_H is None the function falls back to the original NaN-only mask
+        for backward compatibility.
 
     Returns
     -------
     Tuple[np.ndarray, np.ndarray, np.ndarray]
-        - Y: Normalized pedestrian wind speed (Ny, Nx).
-        - tke_norm: Normalized turbulence kinetic energy (Ny, Nx).
-        - valid_mask: Boolean mask indicating valid fluid measurements (~isnan).
+        - Y: Normalized pedestrian wind speed (Ny, Nx).  Zero at invalid cells.
+        - tke_norm: Normalized turbulence kinetic energy (Ny, Nx).  Zero at invalid cells.
+        - valid_mask: Boolean mask — True only for open-ground cells with finite,
+          non-NaN wind values.
     """
     if u_tau <= 0.0:
         raise ValueError(f"Friction velocity u_tau must be strictly positive. Got: {u_tau}")
@@ -279,14 +295,26 @@ def load_normalized_target(
         u_arr = np.array(f["Uped"], dtype=np.float32)
         tke_arr = np.array(f["TKEped"], dtype=np.float32) if "TKEped" in f else np.zeros_like(u_arr)
 
-    valid_mask = ~np.isnan(u_arr)
+    # Build valid mask: start from finite, non-NaN cells in the wind map.
+    valid_mask = np.isfinite(u_arr)
+
+    # Issue 2 fix: additionally exclude building cells identified by the
+    # topography matrix, which is authoritative for building/open classification.
+    # This removes CFD perimeter artefacts that ped.nc does not mark as NaN.
+    if topo_H is not None:
+        if topo_H.shape != u_arr.shape:
+            raise ValueError(
+                f"topo_H shape {topo_H.shape} does not match Uped shape {u_arr.shape}. "
+                "Ensure topo_H has been corrected with np.flipud (Issue 1 fix) before calling."
+            )
+        valid_mask &= (topo_H == 0.0)  # exclude building cells (H > 0)
 
     # Normalize by friction velocity
     Y = np.zeros_like(u_arr, dtype=np.float32)
     Y[valid_mask] = u_arr[valid_mask] / float(u_tau)
 
     tke_norm = np.zeros_like(tke_arr, dtype=np.float32)
-    valid_tke = ~np.isnan(tke_arr) & valid_mask
+    valid_tke = np.isfinite(tke_arr) & valid_mask
     tke_norm[valid_tke] = tke_arr[valid_tke] / float(u_tau**2)
 
     return Y, tke_norm, valid_mask

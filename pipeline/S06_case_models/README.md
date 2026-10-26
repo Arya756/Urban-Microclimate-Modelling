@@ -1,9 +1,9 @@
 # Stage S06 — Case-Level Regression Surrogate Models
 
-**Owner:** M3  
-**Stage:** S06 (Phase 1 — AML)  
-**Status:** ✅ Gate Passed  
-**Date:** 2026-10-25  
+**Owner:** M3
+**Stage:** S06 (Phase 1 — AML)
+**Status:** ✅ Gate Passed
+**Date:** 2026-10-25
 
 ---
 
@@ -37,7 +37,7 @@ Stage S06 trains and evaluates a hierarchy of case-level regression surrogates t
 | U_p95  grouped CV R² | > 0.664 (B1) | **0.7504** | ✅ PASS |
 | Fold-level Wilcoxon p | < 0.05 | **0.0312** | ✅ PASS |
 
-Gate model: `LightGBM + 34 Physics Features` (default hyperparameters)  
+Gate model: `LightGBM + 34 Physics Features` (default hyperparameters)
 Exp ID: `s06_lgbm_default_physics_v1`
 
 ---
@@ -118,8 +118,8 @@ python3 pipeline/S06_case_models/run_s06.py
 ```
 
 The script is self-contained. It reads from:
-- `pipeline/S05_feature_engineering/outputs/case_features.csv`  
-- `pipeline/S04_eda/S04g_combined_report/master_case_table.csv`  
+- `pipeline/S05_feature_engineering/outputs/case_features.csv`
+- `pipeline/S04_eda/S04g_combined_report/master_case_table.csv`
 - `data/splits.json`
 
 It writes to:
@@ -146,3 +146,22 @@ All other dependencies (`numpy`, `pandas`, `scikit-learn`, `scipy`) are already 
 3. **Transfer learning fails completely** — trained on idealized, tested on realistic gives R²=0.12. The two subsets must always be trained together.
 4. **Monotonic constraints are free** — enforcing λ_p↑ → U↓ changes R² by +0.0002. Always enable for physical interpretability.
 5. **TKE_mean is much easier** — R²=0.925, well within reach of B2 (0.941). The aerodynamic roughness features strongly predict canopy turbulence.
+
+---
+
+## S06 Issue 6 — Case Readiness, Topography Alignment, and Exclusions
+
+### Overview & Root-Cause Resolution
+During dataset auditing, concerns were raised regarding six simulation cases:
+- **`JP-Tok-V4_d00` (Simulation Duration):** The simulation ran for 4.91 hours (17,689 s, 8,834 timesteps) before stopping (due to an HPC walltime cutoff relative to the 12-hour nominal setup). Verification of the turbulence time series demonstrates that the flow field achieved turbulent stationarity well before termination (final TKE CV = 1.99%, well below the 10% threshold; duration exceeds the 2.0 h spin-up limit by 2.45x). Complete 34 physics features exist in S05, valid ground targets load without error, and out-of-fold prediction is physically sound (residual: -0.024 m/s).
+- **`UG-UG-U1_d00`, `UG-UG-U2_d00`, `UG-UG-U3_d00` & `AU-Mel-U9_d00` (Topography Mismatches):** Topography and pedestrian target grid dimensions match identically. Prior to S05 Issue 1 (`np.flipud(H)`), top-row-first file storage inverted the y-axis relative to NetCDF arrays, causing apparent mask divergence (~50%). With vertical orientation corrected, mask agreement reaches 90.2%–96.6%. The remaining differences are sub-grid CFD boundary interpolation artefacts at building perimeters.
+- **`NP-NP-U1_d00` ("Buildings Hold Wind Values"):** NetCDF stored numerical zeros or face-staggered velocities within 3,120 building footprint cells. Enforcing `topo_H == 0.0` as the authoritative ground mask (S05 Issue 2) unconditionally zeroes and masks all 81,724 building cells, yielding 116,543 valid pedestrian cells.
+
+### Auditable Exclusions
+Only three cases across all 538 dataset cases remain excluded from model training:
+- `CN-BE-V2_d00`, `CN-CD-V1_d00`, `CN-SH-V1_d00` (`qc_topo_valid = False` due to an upstream bounding-box metadata mismatch where domain size != coordinate span).
+
+### Dataset and Split Integrity
+- **All six investigated cases are retained** as `is_model_ready_spatial = True`.
+- **482 development cases** across 136 spatial groups and 5 outer folds remain completely unchanged.
+- **53 frozen test cases** across 24 test groups remain strictly isolated and untouched.

@@ -92,8 +92,23 @@ def compute_aerodynamic_parameters(
     AerodynamicFeatures
         Calculated aerodynamic properties.
     """
+    # Defensive validation: inputs must be finite and non-negative
+    for name, val in [("lambda_p", lambda_p), ("lambda_f", lambda_f), ("mean_h", mean_h), ("std_h", std_h)]:
+        if not math.isfinite(val):
+            raise ValueError(f"Input {name} must be finite, got {val}")
+        if val < 0.0:
+            raise ValueError(f"Input {name} must be non-negative, got {val}")
+
+    if max_h is not None:
+        if not math.isfinite(max_h):
+            raise ValueError(f"Input max_h must be finite, got {max_h}")
+        if max_h < 0.0:
+            raise ValueError(f"Input max_h must be non-negative, got {max_h}")
+
     if max_h is None or max_h <= 0.0:
         max_h = mean_h
+    else:
+        max_h = max(max_h, mean_h)
 
     z0_ground = cfg.default_ground_roughness_m
 
@@ -137,10 +152,25 @@ def compute_aerodynamic_parameters(
         z0_mac_m = z0_ground
 
     # --- 2. Kanda et al. (2013) ---
-    # Kanda empirical coefficients (Kanda et al. 2013, BLM, Table 1):
-    # a0 = 1.29, b0 = 0.36, c0 = 0.17, a1 = 0.17, b1 = 0.05
-    # X = (std_h + mean_h) / max_h
-    # Y = lf * (std_h / mean_h)
+    # Reference:
+    #   Kanda, M., Inagaki, A., Miyamoto, T., Gryschka, M., & Raasch, S. (2013).
+    #   A New Aerodynamic Parametrization for Real Urban Surfaces.
+    #   Boundary-Layer Meteorology, 148(2), 357-377. DOI: 10.1007/s10546-013-9818-x.
+    #
+    # Formulations:
+    #   - Displacement height ratio d / H_max: Eq. (10)-(11)
+    #     d/H_max = c0 * X^2 + (a0 * lp^b0 - c0 * X^2) * (1 - a1 * exp(-b1 * Y))
+    #     where:
+    #       X = (std_h + mean_h) / max_h  (height variability ratio; X > 0;
+    #         X = 1 for uniform height, X < 1 for right-skewed arrays with tall outliers,
+    #         and X > 1 is mathematically and physically valid for left-skewed arrays
+    #         where std_h + mean_h > max_h; observed up to ~1.14 in realistic cities)
+    #       Y = lambda_f * (std_h / mean_h) (interaction term)
+    #       a0 = 1.29, b0 = 0.36, c0 = 0.17, a1 = 0.17, b1 = 0.05
+    #   - Roughness length ratio z0 / H_max: Eq. (12)-(13)
+    #     z0/H_max = (1 - d/H_max) * (a2 * lf^b2 * exp(-c2 * lf)) * [1 + 0.8 * (std_h / mean_h)]
+    #     where:
+    #       a2 = 0.71, b2 = 0.65, c2 = 1.55
     a0, b0, c0 = 1.29, 0.36, 0.17
     a1, b1 = 0.17, 0.05
 

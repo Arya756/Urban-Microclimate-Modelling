@@ -152,3 +152,159 @@ def test_aerodynamic_limiting_case_flat_terrain():
     assert aero.d_over_hmax_kanda == 0.0
     assert aero.z0_kanda_m == DEFAULT_CONFIG.default_ground_roughness_m
     assert aero.z0_over_hmax_kanda == 0.0
+
+
+def test_kanda_invalid_inputs_raise_errors():
+    """Verify that non-finite (NaN, Inf) and negative inputs raise ValueError."""
+    # NaN inputs
+    with pytest.raises(ValueError, match="Input lambda_p must be finite"):
+        compute_aerodynamic_parameters(float("nan"), 0.25, 16.0, 0.0, 16.0)
+
+    with pytest.raises(ValueError, match="Input lambda_f must be finite"):
+        compute_aerodynamic_parameters(0.25, float("nan"), 16.0, 0.0, 16.0)
+
+    with pytest.raises(ValueError, match="Input mean_h must be finite"):
+        compute_aerodynamic_parameters(0.25, 0.25, float("nan"), 0.0, 16.0)
+
+    with pytest.raises(ValueError, match="Input std_h must be finite"):
+        compute_aerodynamic_parameters(0.25, 0.25, 16.0, float("nan"), 16.0)
+
+    with pytest.raises(ValueError, match="Input max_h must be finite"):
+        compute_aerodynamic_parameters(0.25, 0.25, 16.0, 0.0, float("nan"))
+
+    # Inf inputs
+    with pytest.raises(ValueError, match="Input lambda_p must be finite"):
+        compute_aerodynamic_parameters(float("inf"), 0.25, 16.0, 0.0, 16.0)
+
+    # Negative inputs
+    with pytest.raises(ValueError, match="Input lambda_p must be non-negative"):
+        compute_aerodynamic_parameters(-0.1, 0.25, 16.0, 0.0, 16.0)
+
+    with pytest.raises(ValueError, match="Input mean_h must be non-negative"):
+        compute_aerodynamic_parameters(0.25, 0.25, -5.0, 0.0, 16.0)
+
+
+def test_kanda_max_h_guard():
+    """Verify that max_h < mean_h is guarded safely to max(mean_h, max_h)."""
+    # If caller specifies max_h=10 < mean_h=20, max_h is clamped to 20
+    aero = compute_aerodynamic_parameters(
+        lambda_p=0.25,
+        lambda_f=0.25,
+        mean_h=20.0,
+        std_h=0.0,
+        max_h=10.0,
+    )
+    # With max_h clamped to mean_h=20, behavior matches uniform canopy
+    aero_expected = compute_aerodynamic_parameters(
+        lambda_p=0.25,
+        lambda_f=0.25,
+        mean_h=20.0,
+        std_h=0.0,
+        max_h=20.0,
+    )
+    assert abs(aero.d_over_hmax_kanda - aero_expected.d_over_hmax_kanda) < 1e-6
+    assert abs(aero.d_kanda_m - aero_expected.d_kanda_m) < 1e-6
+
+
+def test_kanda_duplicate_feature_aliases_exact_match():
+    """Verify that d_over_h_kanda and z0_over_h_kanda are exact aliases of their hmax counterparts."""
+    aero = compute_aerodynamic_parameters(
+        lambda_p=0.3,
+        lambda_f=0.2,
+        mean_h=18.0,
+        std_h=6.0,
+        max_h=30.0,
+    )
+    # Properties match
+    assert aero.d_over_h_kanda == aero.d_over_hmax_kanda
+    assert aero.z0_over_h_kanda == aero.z0_over_hmax_kanda
+
+    # Dictionary serialization produces exact duplicate pairs for backwards compatibility
+    d = aero.to_dict()
+    assert d["d_over_h_kanda"] == d["d_over_hmax_kanda"]
+    assert d["z0_over_h_kanda"] == d["z0_over_hmax_kanda"]
+
+
+def test_kanda_extreme_densities_bounded():
+    """Verify behavior at extreme densities (near-zero and near-one)."""
+    # Very sparse canopy
+    aero_sparse = compute_aerodynamic_parameters(
+        lambda_p=0.001, lambda_f=0.001, mean_h=15.0, std_h=2.0, max_h=20.0
+    )
+    assert 0.0 < aero_sparse.d_over_hmax_kanda < 1.0
+    assert 0.0 < aero_sparse.z0_over_hmax_kanda < 0.5
+    assert aero_sparse.d_kanda_m < 20.0
+
+    # Very dense canopy (skimming flow)
+    aero_dense = compute_aerodynamic_parameters(
+        lambda_p=0.95, lambda_f=0.8, mean_h=15.0, std_h=2.0, max_h=20.0
+    )
+    assert 0.0 < aero_dense.d_over_hmax_kanda < 1.0
+    # In dense canopies, d approaches canopy height and z0 decreases
+    assert aero_dense.d_over_hmax_kanda > aero_sparse.d_over_hmax_kanda
+    assert aero_dense.z0_over_hmax_kanda < aero_sparse.z0_over_hmax_kanda
+
+
+def test_kanda_height_variability_exceeding_max_h():
+    """Verify that cases with left-skewed distributions where std_h + mean_h > max_h (X > 1)
+
+    are mathematically well-behaved and physically plausible without clipping.
+    """
+    # Parameters from real case KO-SE-V9_d00 (Seoul):
+    # mean_h = 40.828, std_h = 15.999, max_h = 50.0 -> X = (40.828 + 15.999)/50.0 = 1.1365 > 1.0
+    lp = 0.28
+    lf = 0.22
+    mean_h = 40.828
+    std_h = 15.999
+    max_h = 50.0
+
+    X = (std_h + mean_h) / max_h
+    assert X > 1.0
+
+    aero = compute_aerodynamic_parameters(
+        lambda_p=lp,
+        lambda_f=lf,
+        mean_h=mean_h,
+        std_h=std_h,
+        max_h=max_h,
+    )
+
+    # 1. d / H_max must be strictly within physical bounds (0, 1)
+    assert 0.0 < aero.d_over_hmax_kanda < 1.0
+    # Must not hit the artificial boundary clips (0.0 or 0.999)
+    assert aero.d_over_hmax_kanda < 0.99
+    assert aero.d_over_hmax_kanda > 0.1
+
+    # 2. Physical displacement height is strictly less than max_h
+    assert 0.0 < aero.d_kanda_m < max_h
+
+    # 3. Roughness length is positive and bounded
+    assert 0.0 < aero.z0_over_hmax_kanda < 0.5
+    assert aero.z0_kanda_m > DEFAULT_CONFIG.default_ground_roughness_m
+
+
+def test_kanda_preservation_of_real_case_features():
+    """Verify that recomputing aerodynamic parameters on actual cases matches case_features.csv exactly."""
+    import pathlib
+    import pandas as pd
+
+    csv_path = pathlib.Path("pipeline/S05_feature_engineering/outputs/case_features.csv")
+    if not csv_path.exists():
+        pytest.skip("case_features.csv not present")
+
+    df = pd.read_csv(csv_path)
+    # Test a sample of 20 diverse cases: including uniform (X=1), right-skewed (X<1), and left-skewed (X>1)
+    sample_cases = df.sample(n=min(20, len(df)), random_state=42)
+
+    for _, row in sample_cases.iterrows():
+        aero = compute_aerodynamic_parameters(
+            lambda_p=row["lambda_p"],
+            lambda_f=row["lambda_f_dir"],
+            mean_h=row["mean_h"],
+            std_h=row["std_h"],
+            max_h=row["max_h"],
+        )
+        assert abs(aero.d_kanda_m - row["d_kanda_m"]) < 1e-5
+        assert abs(aero.z0_kanda_m - row["z0_kanda_m"]) < 1e-5
+        assert abs(aero.d_over_hmax_kanda - row["d_over_hmax_kanda"]) < 1e-5
+        assert abs(aero.z0_over_hmax_kanda - row["z0_over_hmax_kanda"]) < 1e-5
