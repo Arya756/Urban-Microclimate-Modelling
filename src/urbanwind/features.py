@@ -1,5 +1,5 @@
 """
-features.py – High-level features API exposed through mmnscfd shared library.
+features.py – High-level features API exposed through urbanwind shared library.
 
 Re-exports core feature extraction functions from pipeline.S05_feature_engineering.
 """
@@ -14,7 +14,7 @@ _REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
-from pipeline.S05_feature_engineering import (
+from pipeline.S05_feature_engineering import (  # noqa: E402  (needs the repository root on sys.path)
     DEFAULT_CONFIG,
     AerodynamicFeatures,
     DistanceSummary,

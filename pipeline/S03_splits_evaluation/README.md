@@ -5,7 +5,7 @@ Defines the frozen train/val/test split strategy and establishes the shared eval
 | | |
 | --- | --- |
 | **Inputs** | `pipeline/S04_eda/S04g_combined_report/model_ready_cases.csv` |
-| **Outputs** | `data/splits.json` (hash committed), `results/runs.csv` (header), `src/mmnscfd/splits.py`, `src/mmnscfd/metrics.py`, `src/mmnscfd/evaluate.py` |
+| **Outputs** | `data/splits.json` (hash committed), `results/runs.csv` (header), `src/urbanwind/splits.py`, `src/urbanwind/metrics.py`, `src/urbanwind/evaluate.py` |
 | **Gate Requirement** | splits hash committed; leakage test (no group in two places) passes; dummy predictor scored through `evaluate.py` gives case-level R² ≈ 0 |
 | **Gate Status** | ✅ PASSED |
 
@@ -41,7 +41,7 @@ Opened **only** in S9 (Phase 1) and S16 (Phase 2). Never used for tuning.
 
 All results are computed via:
 ```
-python -m mmnscfd.evaluate results/preds/<exp_id> --exp-id <id> --stage <Sxx>
+python -m urbanwind.evaluate results/preds/<exp_id> --exp-id <id> --stage <Sxx>
 ```
 
 Metrics (open-ground cells only, case-weighted):
@@ -52,7 +52,7 @@ Metrics (open-ground cells only, case-weighted):
 | Macro-averaged within-case R² | `pooled_r2` | Arithmetic mean of within-case R² values (`_nanmean("r2")`), **not** a globally pooled R² computed from global sum of squares. |
 | median nRMSE | `median_nrmse` | Median of (per-case RMSE ÷ mean target) |
 | within-case R² | `within_r2` | Pattern agreement inside a case (identical to per-case R² for flat 1D/2D arrays) |
-| SSIM | `median_ssim` | Median correlation of standardized arrays |
+| Pattern correlation | `median_corr` | Median over cases of the Pearson correlation between the true and predicted open-ground fields |
 | ΔP95, Δmax | `mean_delta_p95`, `mean_delta_max` | Mean difference in 95th percentile and maximum wind speed |
 | level err, pattern err | `mean_level_err`, `mean_pattern_err` | Mean bias squared and pattern variance error decomposition |
 

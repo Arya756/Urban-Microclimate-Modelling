@@ -55,7 +55,7 @@ All models are evaluated with grouped cross-validation, so that entire cities an
 Urban-Microclimate-Modelling/
 ├── README.md
 ├── data/                             case catalog, metadata and download script; raw and processed data are not tracked
-├── src/mmnscfd/                      shared data, feature, metric and model code
+├── src/urbanwind/                      shared data, feature, metric and model code
 ├── pipeline/
 │   ├── S00_setup/
 │   ├── S01_data_ingestion/

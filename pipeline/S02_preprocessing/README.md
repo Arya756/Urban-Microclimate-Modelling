@@ -20,6 +20,18 @@ Stage S02 processes **1D vertical profiles only** (`canonical_profiles.parquet`)
 | --- | --- |
 | `S02_Profile_Preprocessing.ipynb` | Comprehensive Google Colab & local stage notebook executing environment checks, profile cleaning, 538-case batch processing, physics checks, catalog metadata integration, and verified exports |
 | `S02_gate_report.md` | Formal Stage S02 Gate Report documenting verification results, shape metrics, and physics pass rates |
+| `build_case_targets.py` | Builds `outputs/case_targets.csv`, the case-level regression targets, from the pedestrian-level wind fields |
+| `outputs/case_targets.csv` | One row per case: open-ground mean, 95th percentile and standard deviation of $U/u_*$, mean $\text{TKE}/u_*^2$, forcing direction, grid spacing, $u_*$ and an `ok` / `flag` / `exclude` status |
+
+## Case-level targets
+
+`build_case_targets.py` reads every case through `urbanwind.data.load_case`, which:
+- flips the `_topo` raster (stored top row first) onto the row order of the `_ped.nc` fields;
+- takes open ground from the raster (`H == 0`). Taking it from NaN in the wind file is wrong for files that store 0 inside buildings: for 51 cases the mean wind changes by more than 1%, by up to 11.7% (AU-Mel-U1_d00);
+- divides each field by the case's own friction velocity $u_*$ from `data/metadata.csv` (0.2015 to 0.2106 m/s), joined through `data/portal_to_metadata_map.csv`;
+- reads the wind direction from the `dpdxy` forcing in `_p3d`.
+
+Statistics are taken over open-ground cells with a finite value. Four cases are excluded and carry no targets: CN-BE-V2_d00, CN-CD-V1_d00 and CN-SH-V1_d00 (the downloadable building map does not match the simulated domain) and JP-Tok-V4_d00 (the run stopped at 4.9 h). Five cases with a building-map mismatch of up to 13% of building cells (UG-UG-U1/U2/U3, NP-NP-U1, AU-Mel-U9) are kept and marked `flag`.
 
 ## Data Cleaning Rules
 

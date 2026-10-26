@@ -23,7 +23,7 @@ Stage S06 trains and evaluates a hierarchy of case-level regression surrogates t
 | Transfer tests | Cross-subset inference (idealized→realistic and vice versa) |
 | Statistical significance | Fold-level Wilcoxon signed-rank test (N=5) + case-level Wilcoxon (N=482) |
 | Contract predictions | OOF predictions saved to `results/preds/` in `evaluate.py` contract format |
-| Scoring | `mmnscfd.evaluate` scores and appends to `results/runs.csv` |
+| Scoring | `urbanwind.evaluate` scores and appends to `results/runs.csv` |
 | Gate report | Full markdown report with all numbers, tables and outputs |
 
 ---
@@ -123,7 +123,7 @@ The script is self-contained. It reads from:
 It writes to:
 - `pipeline/S06_case_models/outputs/` (reports, CSVs, figures)
 - `results/preds/` (contract-format predictions)
-- `results/runs.csv` (metric log via `mmnscfd.evaluate`)
+- `results/runs.csv` (metric log via `urbanwind.evaluate`)
 
 ---
 

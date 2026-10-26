@@ -20,25 +20,18 @@ from __future__ import annotations
 
 import json
 import math
-import pathlib
-import sys
+
 import numpy as np
 import pandas as pd
 import pytest
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-TEST_DIR = pathlib.Path(__file__).resolve().parent
-SRC_DIR = TEST_DIR.parent
-REPO_ROOT = SRC_DIR.parent
 
-sys.path.insert(0, str(SRC_DIR))
-sys.path.insert(0, str(REPO_ROOT))
-
-from mmnscfd.evaluate import (
+from urbanwind.evaluate import (
     evaluate_scalar_preds,
     is_scalar_case_table,
 )
-from mmnscfd.metrics import (
+from urbanwind.metrics import (
     case_metrics,
     pooled_metrics,
     regression_metrics,
@@ -273,5 +266,5 @@ def test_regression_preserves_spatial_field_behavior():
     assert m["n"] == 3
     assert math.isclose(m["mae"], 0.133333333, rel_tol=1e-4)
     # Check SSIM calculation on spatial field
-    assert math.isfinite(m["ssim"])
+    assert math.isfinite(m["corr"])
     assert math.isfinite(m["within_r2"])
