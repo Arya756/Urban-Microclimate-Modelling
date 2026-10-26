@@ -367,7 +367,7 @@ IT-ROM-V4_d90,realistic,city-IT-ROM,ok,,1.74809,3.60727,1.01016,1.81465,322457,0
 JP-Tok-U2_d00,realistic,city-JP-TOK,ok,,2.19963,4.85845,1.47191,1.89176,613187,0.0198488,0,1,0.206328
 JP-Tok-V1_d00,realistic,city-JP-TOK,ok,,1.70888,3.37253,0.974706,1.08605,555810,0.00518882,0,1,0.206837
 JP-Tok-V3_d00,realistic,city-JP-TOK,ok,,2.64321,5.61894,1.66738,2.04126,625925,0.0134633,0,1,0.207011
-JP-Tok-V4_d00,realistic,city-JP-TOK,exclude,"simulation stopped at 4.9 h, before its averaging window",,,,,,,,,
+JP-Tok-V4_d00,realistic,city-JP-TOK,flag,"run stopped at 4.9 h, so its fields average 0.9 h instead of 8 h (flow already stationary)",1.54711,4.20419,1.24591,1.25539,290791,0.021806,0,1,0.204736
 JP-Yoyogi,realistic,city-JP-YOYOGI,ok,,1.49069,3.62149,1.06464,1.0533,679389,0,22.5,1,0.207288
 KO-SE-U1_d00,realistic,city-KO-SE,ok,,2.18753,4.41925,1.20275,2.40337,383278,0.00624873,0,1,0.208122
 KO-SE-U2_d00,realistic,city-KO-SE,ok,,1.64989,3.07285,0.802897,2.30919,205297,0.00635664,0,1,0.208505

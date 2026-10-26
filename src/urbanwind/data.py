@@ -42,11 +42,11 @@ EXCLUDE: dict[str, str] = {
     "CN-BE-V2_d00": "downloadable building map does not match the simulated domain",
     "CN-CD-V1_d00": "downloadable building map does not match the simulated domain",
     "CN-SH-V1_d00": "downloadable building map does not match the simulated domain",
-    "JP-Tok-V4_d00": "simulation stopped at 4.9 h, before its averaging window",
 }
 
 # Cases kept for training but reported in a sensitivity check without them.
 FLAG: dict[str, str] = {
+    "JP-Tok-V4_d00": "run stopped at 4.9 h, so its fields average 0.9 h instead of 8 h (flow already stationary)",
     "UG-UG-U1_d00": "building map and wind field disagree on up to 13% of building cells",
     "UG-UG-U2_d00": "building map and wind field disagree on up to 13% of building cells",
     "UG-UG-U3_d00": "building map and wind field disagree on up to 13% of building cells",

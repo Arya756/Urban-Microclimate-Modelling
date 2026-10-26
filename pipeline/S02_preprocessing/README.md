@@ -31,7 +31,7 @@ Stage S02 processes **1D vertical profiles only** (`canonical_profiles.parquet`)
 - divides each field by the case's own friction velocity $u_*$ from `data/metadata.csv` (0.2015 to 0.2106 m/s), joined through `data/portal_to_metadata_map.csv`;
 - reads the wind direction from the `dpdxy` forcing in `_p3d`.
 
-Statistics are taken over open-ground cells with a finite value. Four cases are excluded and carry no targets: CN-BE-V2_d00, CN-CD-V1_d00 and CN-SH-V1_d00 (the downloadable building map does not match the simulated domain) and JP-Tok-V4_d00 (the run stopped at 4.9 h). Five cases with a building-map mismatch of up to 13% of building cells (UG-UG-U1/U2/U3, NP-NP-U1, AU-Mel-U9) are kept and marked `flag`.
+Statistics are taken over open-ground cells with a finite value. Three cases are excluded and carry no targets: CN-BE-V2_d00, CN-CD-V1_d00 and CN-SH-V1_d00 (the downloadable building map does not match the simulated domain). Six cases are kept and marked `flag`, so that results can be checked without them: JP-Tok-V4_d00 (the run stopped at 4.9 h, so its fields average 0.9 h of stationary flow instead of 8 h) and UG-UG-U1/U2/U3, NP-NP-U1 and AU-Mel-U9 (building map and wind field disagree on up to 13% of building cells).
 
 ## Data Cleaning Rules
 

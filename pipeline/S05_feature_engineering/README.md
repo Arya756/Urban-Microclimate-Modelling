@@ -4,8 +4,8 @@ Transforms preprocessed building height rasters, domain geometry, and atmospheri
 
 | Attribute | Details |
 | --- | --- |
-| **Inputs** | `data/catalog.csv`, `data/metadata.csv`, `data/splits.json`, `data/raw/<case>/<case>_topo`, `pipeline/S04_eda/S04g_combined_report/master_case_table.csv` |
-| **Outputs** | `outputs/case_features.csv`, `outputs/pixel_features/<case>_features.npz`, `outputs/feature_dictionary.json`, `outputs/S05_gate_report.md` |
+| **Inputs** | `data/raw/<case>/<case>_topo` and `_p3d` (read through `urbanwind.data`), `pipeline/S04_eda/S04g_combined_report/master_case_table.csv` (case descriptors) |
+| **Outputs** | `outputs/case_features.csv` (535 cases), `outputs/feature_dictionary.json`, `outputs/S05_gate_report.md`, example figures; 22-channel pixel tensors are built on demand (`assemble_pixel_feature_tensor`) and written to `outputs/pixel_features/` only with `--save_pixel` |
 | **Gate Requirement** | 100% test pass rate, exact periodic boundary handling, Macdonald (1998) & Kanda (2013) parameterizations verified, zero target leakage. |
 
 ---
@@ -23,8 +23,10 @@ pipeline/S05_feature_engineering/
 ├── aerodynamic.py            # Macdonald (1998) and Kanda et al. (2013) parameterizations
 ├── spatial_features.py       # Periodic Euclidean distance, FFT circular convolutions for local density & height
 ├── fetch_features.py         # Periodic raymarch for upwind, downwind, and lateral fetch
-├── feature_assembly.py       # Case-level record assembly, 19-channel pixel tensor, separate target loader
-├── process_cases.py          # Batch CLI runner, memory-safe execution, progress tracking, gate reporting
+├── feature_assembly.py       # Case-level record assembly, 22-channel pixel tensor, separate target loader
+├── process_cases.py          # Batch CLI runner, progress tracking, gate reporting
+├── plot_feature_examples.py  # Channel grid and fetch figures for example cases
+├── S05a_feature_engineering.ipynb  # First full run (superseded by process_cases.py, see below)
 └── tests/                    # Comprehensive unit tests
     ├── test_validation.py
     ├── test_morphology.py
@@ -32,6 +34,8 @@ pipeline/S05_feature_engineering/
     ├── test_spatial_features.py
     ├── test_fetch_features.py
     ├── test_feature_assembly.py
+    ├── test_canyon_geometry.py
+    ├── test_readiness.py
     ├── test_topo_orientation.py
     └── test_valid_mask.py
 ```
@@ -62,10 +66,12 @@ $$\frac{z_0}{H} = \left(1 - \frac{d}{H}\right) \exp\left( -\left[ 0.5 \beta \fra
 - Empirical parameters: $\alpha = 4.43$, $\kappa = 0.40$, $C_D = 1.20$, $\beta = 1.00$.
 
 #### Kanda et al. (2013)
-Accounts for height variability ($\sigma_H, H_{\text{max}}$):
-$$\frac{d_{\text{kanda}}}{H_{\text{max}}} = c_0 X^2 + \left(a_0 \lambda_p^{b_0} - c_0 X^2\right) \left[ 1 - a_1 \exp(-b_1 Y) \right]$$
-$$\frac{z_{0, \text{kanda}}}{H_{\text{max}}} = \left(1 - \frac{d}{H_{\text{max}}}\right) \left(a_2 \lambda_f^{b_2}\right) \exp(-c_2 \lambda_f) \cdot \left[1 + 0.8 \frac{\sigma_H}{\bar{H}}\right]$$
-where $X = (\sigma_H + \bar{H}) / H_{\text{max}}$ and $Y = \lambda_f (\sigma_H / \bar{H})$.
+Fitted to large-eddy simulations of real city blocks; accounts for height variability ($\sigma_H$, $H_{\text{max}}$):
+$$\frac{d}{H_{\text{max}}} = c_0 X^2 + \left(a_0 \lambda_p^{b_0} - c_0\right) X, \qquad X = \frac{\sigma_H + \bar{H}}{H_{\text{max}}} \le 1$$
+$$z_0 = \left(b_1 Y^2 + c_1 Y + a_1\right) z_{0,\text{Macdonald}}, \qquad Y = \frac{\lambda_p \sigma_H}{\bar{H}}$$
+- Constants: $a_0 = 1.29$, $b_0 = 0.36$, $c_0 = -0.17$, $a_1 = 0.71$, $b_1 = 20.21$, $c_1 = -0.77$ (as implemented in UMEP).
+- For uniform heights $X = 1$ and $Y = 0$, so $d = a_0 \lambda_p^{b_0} \bar{H}$ and $z_0 = a_1 z_{0,\text{Macdonald}}$. For $X > 1$ (outside the fitted range) $d = a_0 \lambda_p^{b_0} \bar{H}$.
+- $d$ is capped just below $H_{\text{max}}$: the fit exceeds it for $\lambda_p$ above about 0.55 (20 dense idealized arrays and 3 realistic cases).
 
 ### 5. Multi-Scale Spatial Convolutions
 - Evaluated via exact 2D FFT circular convolution on the periodic torus:
@@ -79,7 +85,7 @@ $$\lambda_{p, R} = \mathcal{F}^{-1}\left( \mathcal{F}(M_{\text{bldg}}) \cdot \ma
 
 ---
 
-## Pixel-Level Multichannel Tensor Channels (19 Channels)
+## Pixel-Level Multichannel Tensor Channels (22 Channels)
 
 | Channel | Identifier | Description | Units |
 | --- | --- | --- | --- |
@@ -91,9 +97,10 @@ $$\lambda_{p, R} = \mathcal{F}^{-1}\left( \mathcal{F}(M_{\text{bldg}}) \cdot \ma
 | 11 | `upwind_fetch` | Upwind unobstructed distance (capped at 150 m) | m |
 | 12 | `downwind_fetch` | Downwind unobstructed distance (capped at 60 m) | m |
 | 13–14 | `lateral_{left,right}_fetch`| Lateral unobstructed distances (capped at 60 m) | m |
-| 15 | `canyon_width` | Local street canyon width ($2 \times \text{distance}$) | m |
-| 16 | `aspect_ratio_hw` | Local canyon aspect ratio ($H / W$) | - |
-| 17–18 | `wind_{cos,sin}` | Prevailing wind vector components $(\cos\theta, \sin\theta)$ | - |
+| 15–17 | `upwind_h_{1_10,11_30,31_60}m` | Tallest building upwind within 1–10, 11–30 and 31–60 m | m |
+| 18 | `canyon_width` | Local street canyon width ($2 \times \text{distance}$) | m |
+| 19 | `aspect_ratio_hw` | Local canyon aspect ratio ($H / W$) | - |
+| 20–21 | `wind_{cos,sin}` | Prevailing wind vector components $(\cos\theta, \sin\theta)$ | - |
 
 ---
 
@@ -117,7 +124,14 @@ Process specific cases:
 python pipeline/S05_feature_engineering/process_cases.py --cases UA0625_d00 CA-Sunset
 ```
 
-Process all model-ready cases:
+Process all usable cases (about 80 s; add `--save_pixel` to also write the pixel tensors, about 5 GB):
 ```bash
-python pipeline/S05_feature_engineering/process_cases.py --subset all --skip_existing
+python pipeline/S05_feature_engineering/process_cases.py
+python pipeline/S05_feature_engineering/plot_feature_examples.py
 ```
+
+## Data handling
+
+- Building maps are read through `urbanwind.data.load_topo`, which flips the top-row-first `_topo` raster onto the row order of the wind fields. Rows are +y and columns +x; the wind direction is measured from +x towards +y.
+- The three cases in `urbanwind.data.EXCLUDE` are skipped, leaving 535 cases.
+- `S05a_feature_engineering.ipynb` records the first full run. It predates the orientation fix and the corrected Kanda parameterisation, so its outputs are historical; `case_features.csv` and the figures in `outputs/` come from `process_cases.py` and `plot_feature_examples.py`.

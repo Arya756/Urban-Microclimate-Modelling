@@ -30,7 +30,8 @@ def test_case_table_joins_renamed_cases():
     assert table.loc["AR-BA-U1_d00", "metadata_NameE"] == "AR-Bue-U1_d00"
     assert 0.2 < table.loc["AR-BA-U1_d00", "u_tau"] < 0.22
     assert table["u_tau"].isna().sum() == 3  # the three CN cases with no matching metadata row
-    assert table.loc["JP-Tok-V4_d00", "status"] == "exclude"
+    assert table.loc["CN-CD-V1_d00", "status"] == "exclude"
+    assert table.loc["JP-Tok-V4_d00", "status"] == "flag"
 
 
 @needs_raw
