@@ -6,7 +6,7 @@ random_seed: 42
 
 paths:
   features: "pipeline/S05_feature_engineering/outputs/case_features.csv"
-  target_table: "pipeline/S04_eda/S04g_combined_report/master_case_table.csv"
+  target_table: "pipeline/S02_preprocessing/outputs/case_targets.csv"
   splits: "data/splits.json"
   output_dir: "pipeline/S06b_feature_selection_AS/outputs"
   plots_dir: "pipeline/S06b_feature_selection_AS/outputs/plots"

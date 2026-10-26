@@ -8,7 +8,9 @@
 
 ## 📖 Overview for Beginners
 
-In Stage S06, our team built a LightGBM machine learning model to predict urban wind speeds (`U_mean`). That model used **34 physics-informed features** (such as building height, street canyon width, wind direction, and aerodynamic roughness parameters) and achieved an $R^2$ score of approximately **0.822**.
+In Stage S06, our team built a LightGBM machine learning model to predict the mean pedestrian wind speed of each case (`U_mean`, in units of the case's friction velocity u*). That model used **34 physics-informed features** (such as building height, street canyon width, wind direction, and aerodynamic roughness parameters) and achieves an $R^2$ score of approximately **0.82**.
+
+> **Update.** All results below come from a rerun on the corrected targets (U/u* with each case's own u*, open ground taken from the building map) and the S05 features with the published Kanda (2013) parameterisation. The conclusions changed: no selection method now beats the full feature set.
 
 However, having 34 features introduces two main challenges:
 1. **Redundancy and Multicollinearity:** Several features measure almost the exact same physical phenomenon. For example, building height variation $CV(h)$ and $\gamma_h$ have a correlation of $1.000$ (perfect collinearity), and aerodynamic displacement height $d/h$ correlates $>0.98$ with building density $\lambda_p$.
@@ -140,34 +142,39 @@ pipeline/S06b_feature_selection_AS/
 
 ### Overall Performance on Target `U_mean` (5 Outer Folds)
 
-| Method | Approach | Features / Components | Mean $R^2 \pm \text{std}$ | MAE (m/s) | RMSE (m/s) |
+| Method | Approach | Features / Components | Mean $R^2 \pm \text{std}$ | MAE (U/u*) | RMSE (U/u*) |
 |---|---|---|---|---|---|
-| **Baseline** | Full Set | 34.0 | $0.8217 \pm 0.0552$ | 0.0355 | 0.0563 |
-| **Corr_filter_0.95** | Filter | 27.0 | $0.8095 \pm 0.0566$ | 0.0368 | 0.0584 |
-| **Mutual_Info_top20** | Filter | 20.0 | $0.7941 \pm 0.0761$ | 0.0387 | 0.0603 |
-| **F_test_top20** | **Filter** | **20.0** | **$0.8284 \pm 0.0508$** | **0.0358** | **0.0552** |
-| **Wrapper_RFECV** | **Wrapper** | **14.6** | **$0.8101 \pm 0.0718$** | **0.0366** | **0.0579** |
-| **PCA_90%_var** | PCA | 8.2 | $0.7467 \pm 0.0789$ | 0.0438 | 0.0675 |
-| **PCA_95%_var** | PCA | 11.0 | $0.7439 \pm 0.0714$ | 0.0436 | 0.0680 |
-| **PCA_99%_var** | PCA | 17.0 | $0.7501 \pm 0.0741$ | 0.0434 | 0.0668 |
+| Baseline | Full Set | 34.0 | $0.8170 \pm 0.0627$ | 0.1695 | 0.2688 |
+| Corr_filter_0.95 | Filter | 27.8 | $0.8162 \pm 0.0503$ | 0.1742 | 0.2721 |
+| Mutual_Info_top20 | Filter | 20.0 | $0.7966 \pm 0.0732$ | 0.1814 | 0.2844 |
+| F_test_top20 | Filter | 20.0 | $0.8068 \pm 0.0458$ | 0.1827 | 0.2797 |
+| Wrapper_RFECV | Wrapper | 16.6 | $0.8099 \pm 0.0792$ | 0.1725 | 0.2718 |
+| PCA_90%_var | PCA | 8.2 | $0.7208 \pm 0.1164$ | 0.2190 | 0.3327 |
+| PCA_95%_var | PCA | 11.2 | $0.7482 \pm 0.0928$ | 0.2076 | 0.3169 |
+| PCA_99%_var | PCA | 18.0 | $0.7557 \pm 0.0752$ | 0.2016 | 0.3127 |
 
 ---
 
 ## 🎯 Final Conclusions and Recommendations
 
-1. **Best Overall Choice — F-test Top 20:**
-   - Prunes 14 redundant features (41% reduction).
-   - Performs comparably to the baseline with 41% fewer features ($R^2 = 0.8284 \pm 0.0508$ vs. $0.8217 \pm 0.0552$).
-   - The small average numerical difference ($+0.0067$) is inconsistent across folds (+0.056, -0.025, +0.002, +0.015, -0.015), well within fold-to-fold variability ($\sigma_{\text{fold}} \approx 0.055$), and not yet proven to generalize to new urban morphologies.
-   - Requires $<0.01$ seconds of compute.
-   - Retains 100% physical interpretability.
+1. **Keep the full feature set for accuracy.** No selection method beats the 34-feature baseline ($R^2 = 0.8170 \pm 0.0627$). The best reductions are statistically equivalent to it: their mean paired differences are under a quarter of the fold-to-fold spread, with gains and losses mixed across folds.
 
-2. **Best for Maximum Sparsity — Wrapper RFECV:**
-   - Compresses 34 features down to an average of **14.6 features** (>57% reduction).
-   - Retains $98.6\%$ of baseline predictive accuracy ($R^2 = 0.8101$).
-   - Successfully isolates the core physical drivers: directional frontal area (`lambda_f_dir`), upstream and lateral fetch (`upwind_fetch_mean_m`, `lateral_fetch_mean_m`), street width (`dist_mean_m`), building volume, and windward wall area.
+2. **Cleanest reduction: correlation filtering.**
+   - It removes about 6 collinear features (27.8 kept) with no loss ($R^2 = 0.8162 \pm 0.0503$).
+   - It takes milliseconds, and the kept features stay physically interpretable.
 
-3. **Avoid PCA for Tree-Based Urban Microclimate Surrogates:**
-   - While PCA successfully captures 95% variance with only 11 components, LightGBM accuracy drops by $\sim 0.072$ in $R^2$ because orthogonal linear combinations blur sharp, localized physical thresholds.
+3. **Most compression: wrapper RFECV.**
+   - It keeps 16.6 features on average, about half, at $R^2 = 0.8099$.
+   - It selects these in every fold:
+     - directional frontal area (`lambda_f_dir`);
+     - upwind and lateral fetch;
+     - mean distance to walls;
+     - built volume;
+     - the Kanda displacement height and roughness length;
+     - the Macdonald roughness length.
+
+4. **F-test top 20** reaches $R^2 = 0.8068 \pm 0.0458$. In the first run (old targets) it edged the baseline; on the corrected data it does not.
+
+5. **Avoid PCA for these tree models.** Keeping 90 to 99% of the variance with 8 to 18 components lowers $R^2$ to 0.721–0.756, because linear projections blur the physical thresholds the trees split on.
 
 For the full detailed scientific findings and answers to the research questions, see [`outputs/experiment_report.md`](outputs/experiment_report.md).

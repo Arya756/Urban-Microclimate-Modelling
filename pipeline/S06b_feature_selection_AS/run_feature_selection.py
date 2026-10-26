@@ -182,7 +182,6 @@ def run_experiments(
 
     # Calculate comparison table across folds (np.std with ddof=0, as in S06)
     comparison_rows = []
-    baseline_fold_r2 = fold_metrics_df[fold_metrics_df["method"] == "Baseline (34 features)"]["r2"].values
 
     for method_label, _, _ in methods_config:
         m_df = fold_metrics_df[fold_metrics_df["method"] == method_label]

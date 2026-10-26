@@ -1,0 +1,3 @@
+train,test,r2_transfer,r2_within_subset_cv
+idealized,realistic,0.0925,0.6858
+realistic,idealized,-0.4665,0.9671

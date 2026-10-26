@@ -27,7 +27,7 @@ Stage S02 processes **1D vertical profiles only** (`canonical_profiles.parquet`)
 
 `build_case_targets.py` reads every case through `urbanwind.data.load_case`, which:
 - flips the `_topo` raster (stored top row first) onto the row order of the `_ped.nc` fields;
-- takes open ground from the raster (`H == 0`). Taking it from NaN in the wind file is wrong for files that store 0 inside buildings: for 51 cases the mean wind changes by more than 1%, by up to 11.7% (AU-Mel-U1_d00);
+- takes open ground from the raster (`H == 0`). Taking it from NaN in the wind file is wrong for files that store 0 inside buildings: for 52 cases the mean wind changes by more than 1%, by up to 11.7% (AU-Mel-U1_d00);
 - divides each field by the case's own friction velocity $u_*$ from `data/metadata.csv` (0.2015 to 0.2106 m/s), joined through `data/portal_to_metadata_map.csv`;
 - reads the wind direction from the `dpdxy` forcing in `_p3d`.
 
