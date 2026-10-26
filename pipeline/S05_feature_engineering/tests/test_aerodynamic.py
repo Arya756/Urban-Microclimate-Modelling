@@ -45,47 +45,22 @@ def test_macdonald_exact_analytical_values():
     assert abs(aero.z0_over_h_macdonald - 0.122921) < 1e-5
 
 
+A0, B0, C0 = 1.29, 0.36, -0.17  # Kanda et al. (2013) displacement-height constants
+A1, B1, C1 = 0.71, 20.21, -0.77  # Kanda et al. (2013) roughness-length constants
+
+
 def test_kanda_uniform_height_exact_values():
-    """Verify exact analytical values of Kanda et al. (2013) on uniform canopy (std_h=0)."""
-    lp = 0.25
-    lf = 0.25
-    mean_h = 16.0
-    max_h = 16.0
-    std_h = 0.0
+    """Uniform heights: X = 1 and Y = 0, so d = a0 lp^b0 H and z0 = a1 z0_Macdonald."""
+    lp, lf, h = 0.25, 0.25, 16.0
+    aero = compute_aerodynamic_parameters(lambda_p=lp, lambda_f=lf, mean_h=h, std_h=0.0, max_h=h)
 
-    aero = compute_aerodynamic_parameters(
-        lambda_p=lp,
-        lambda_f=lf,
-        mean_h=mean_h,
-        std_h=std_h,
-        max_h=max_h,
-    )
+    expected_d_over_hmax = A0 * lp**B0  # = C0 + (A0 lp^B0 - C0) at X = 1
+    assert abs(aero.d_over_hmax_kanda - expected_d_over_hmax) < 1e-9
+    assert abs(aero.d_over_hmax_kanda - 0.7831557) < 1e-6
+    assert abs(aero.d_kanda_m - expected_d_over_hmax * h) < 1e-9
 
-    # X = (0 + 16) / 16 = 1.0, Y = 0.25 * (0 / 16) = 0.0
-    # a0=1.29, b0=0.36, c0=0.17, a1=0.17, b1=0.05
-    # X2 = 0.17 * 1^2 = 0.17
-    # a0 * lp^b0 = 1.29 * 0.25^0.36 = 0.78320708
-    # term_d = (0.78320708 - 0.17) * (1 - 0.17 * exp(0)) = 0.61320708 * 0.83 = 0.50896188
-    # d / H_max = 0.17 + 0.50896188 = 0.67896188
-    expected_d_over_hmax = 0.17 + (1.29 * (0.25**0.36) - 0.17) * (1.0 - 0.17)
-    expected_d_m = expected_d_over_hmax * max_h
-
-    assert abs(aero.d_over_hmax_kanda - expected_d_over_hmax) < 1e-6
-    assert abs(aero.d_kanda_m - expected_d_m) < 1e-6
-    assert abs(aero.d_over_hmax_kanda - 0.67896188) < 1e-4
-
-    # Roughness length:
-    # a2=0.71, b2=0.65, c2=1.55
-    # z0_term = 0.71 * 0.25^0.65 * exp(-1.55 * 0.25) = 0.1957193
-    # f_var = 1.0
-    # z0 / H_max = (1 - 0.67896188) * 0.1957193 * 1.0 = 0.0628331
-    expected_z0_term = 0.71 * (0.25**0.65) * math.exp(-1.55 * 0.25)
-    expected_z0_over_hmax = (1.0 - expected_d_over_hmax) * expected_z0_term * 1.0
-    expected_z0_m = expected_z0_over_hmax * max_h
-
-    assert abs(aero.z0_over_hmax_kanda - expected_z0_over_hmax) < 1e-6
-    assert abs(aero.z0_kanda_m - expected_z0_m) < 1e-6
-    assert abs(aero.z0_over_hmax_kanda - 0.0628331) < 1e-4
+    assert abs(aero.z0_kanda_m - A1 * aero.z0_over_h_macdonald * h) < 1e-9
+    assert abs(aero.z0_kanda_m - aero.z0_over_hmax_kanda * h) < 1e-9
 
     # Backward compatibility alias
     assert aero.d_over_h_kanda == aero.d_over_hmax_kanda
@@ -93,46 +68,25 @@ def test_kanda_uniform_height_exact_values():
 
 
 def test_kanda_with_height_variability_referenced_to_hmax():
-    """Verify Kanda parameterization with realistic height variability (H_max > mean_h)."""
-    lp = 0.25
-    lf = 0.25
-    mean_h = 16.0
-    std_h = 8.0
-    max_h = 32.0
+    """Variable heights: published quadratic forms in X and Y, referenced to H_max."""
+    lp, lf, mean_h, std_h, max_h = 0.25, 0.25, 16.0, 8.0, 32.0
+    aero = compute_aerodynamic_parameters(lambda_p=lp, lambda_f=lf, mean_h=mean_h, std_h=std_h, max_h=max_h)
 
-    aero = compute_aerodynamic_parameters(
-        lambda_p=lp,
-        lambda_f=lf,
-        mean_h=mean_h,
-        std_h=std_h,
-        max_h=max_h,
-    )
-
-    # 1. d_over_hmax_kanda must be strictly between 0 and 1
-    assert 0.0 < aero.d_over_hmax_kanda < 1.0
-    # 2. d_kanda_m must strictly equal d_over_hmax_kanda * max_h
-    assert abs(aero.d_kanda_m - aero.d_over_hmax_kanda * max_h) < 1e-6
-    # 3. Displacement height must not exceed max_h
+    X = (std_h + mean_h) / max_h  # 0.75
+    Y = lp * std_h / mean_h  # 0.125
+    expected_d_over_hmax = C0 * X**2 + (A0 * lp**B0 - C0) * X
+    assert abs(aero.d_over_hmax_kanda - expected_d_over_hmax) < 1e-9
+    assert abs(aero.d_kanda_m - expected_d_over_hmax * max_h) < 1e-9
     assert aero.d_kanda_m < max_h
 
-    # 4. Roughness length ratio z0 / H_max must be positive and bounded (< 0.5)
-    assert 0.0 < aero.z0_over_hmax_kanda < 0.5
-    # 5. z0_kanda_m must strictly equal z0_over_hmax_kanda * max_h
-    assert abs(aero.z0_kanda_m - aero.z0_over_hmax_kanda * max_h) < 1e-6
+    expected_z0 = (B1 * Y**2 + C1 * Y + A1) * aero.z0_over_h_macdonald * mean_h
+    assert abs(aero.z0_kanda_m - expected_z0) < 1e-9
+    assert abs(aero.z0_kanda_m - aero.z0_over_hmax_kanda * max_h) < 1e-9
 
-    # 6. Verify analytical d_over_hmax calculation
-    X = (8.0 + 16.0) / 32.0  # 0.75
-    Y = 0.25 * (8.0 / 16.0)  # 0.125
-    X2 = 0.17 * (X**2)       # 0.095625
-    term_d = (1.29 * (0.25**0.36) - X2) * (1.0 - 0.17 * math.exp(-0.05 * Y))
-    expected_d_over_hmax = X2 + term_d
-    assert abs(aero.d_over_hmax_kanda - expected_d_over_hmax) < 1e-6
-
-    # 7. Height variability increases turbulent drag: variable canopy z0 > uniform canopy z0
-    aero_uniform = compute_aerodynamic_parameters(
-        lambda_p=lp, lambda_f=lf, mean_h=mean_h, std_h=0.0, max_h=mean_h
-    )
-    assert aero.z0_kanda_m > aero_uniform.z0_kanda_m
+    # Height variability raises both d and z0 relative to a uniform canopy of the same mean height
+    uniform = compute_aerodynamic_parameters(lambda_p=lp, lambda_f=lf, mean_h=mean_h, std_h=0.0, max_h=mean_h)
+    assert aero.d_kanda_m > uniform.d_kanda_m
+    assert aero.z0_kanda_m > uniform.z0_kanda_m
 
 
 def test_aerodynamic_limiting_case_flat_terrain():
@@ -240,9 +194,9 @@ def test_kanda_extreme_densities_bounded():
         lambda_p=0.95, lambda_f=0.8, mean_h=15.0, std_h=2.0, max_h=20.0
     )
     assert 0.0 < aero_dense.d_over_hmax_kanda < 1.0
-    # In dense canopies, d approaches canopy height and z0 decreases
+    # In dense canopies, d approaches canopy height and z0 does not grow (both cases sit at the ground floor here)
     assert aero_dense.d_over_hmax_kanda > aero_sparse.d_over_hmax_kanda
-    assert aero_dense.z0_over_hmax_kanda < aero_sparse.z0_over_hmax_kanda
+    assert aero_dense.z0_over_hmax_kanda <= aero_sparse.z0_over_hmax_kanda
 
 
 def test_kanda_height_variability_exceeding_max_h():

@@ -19,6 +19,8 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 import pandas as pd
 
+from urbanwind.data import EXCLUDE, load_topo
+
 if __package__ is None or __package__ == "":
     repo_root = pathlib.Path(__file__).resolve().parents[2]
     if str(repo_root) not in sys.path:
@@ -319,15 +321,8 @@ def process_single_case(
         logger.info(f"Case {case_id} already processed. Skipping.")
         return None
 
-    # Load topography and correct row orientation.
-    # The _topo files are stored top-row-first (row 0 = maximum physical-y),
-    # while _ped.nc wind maps (loaded via h5py) use bottom-row-first
-    # (row 0 = minimum physical-y, y-axis increases downward in array).
-    # np.flipud aligns both arrays to the same spatial frame.
-    # Verified across 524/538 non-symmetric cases: pixel agreement rises from
-    # ~0.734 (no flip) to ~0.984 (flipud). The remaining 14 cases are perfectly
-    # vertically-symmetric UA* grids where H == np.flipud(H) by construction.
-    H = np.flipud(np.loadtxt(topo_path, dtype=np.float64))
+    # The shared loader flips the top-row-first _topo raster onto the _ped.nc row order.
+    H = load_topo(case_id, cfg.raw_data_dir)
     subset = meta.get("subset", "idealized")
     dx = 0.5 if subset == "idealized" else 1.0
     dy = dx
@@ -388,11 +383,11 @@ def run_pipeline(
     subset: str = "all",
     skip_existing: bool = False,
     cfg: FeatureConfig = DEFAULT_CONFIG,
+    save_pixel: bool = False,
 ) -> pd.DataFrame:
     """Run Stage S05 feature extraction across specified cases."""
     t0 = time.time()
     cfg.output_dir.mkdir(parents=True, exist_ok=True)
-    cfg.pixel_features_dir.mkdir(parents=True, exist_ok=True)
 
     # Load master case table
     if not cfg.master_case_table_path.exists():
@@ -415,9 +410,8 @@ def run_pipeline(
     if subset != "all":
         selected_cases = [c for c in selected_cases if master_df.loc[c, "subset"] == subset]
 
-    # Exclude known invalid cases
-    excluded_cases = {"CN-BE-V2_d00", "CN-CD-V1_d00", "CN-SH-V1_d00"}
-    selected_cases = [c for c in selected_cases if c not in excluded_cases]
+    # Exclude cases with known data problems (urbanwind.data.EXCLUDE)
+    selected_cases = [c for c in selected_cases if c not in EXCLUDE]
 
     logger.info(f"Processing {len(selected_cases)} cases (subset={subset})...")
 
@@ -431,7 +425,7 @@ def run_pipeline(
                 case_id=cid,
                 master_table=master_df,
                 cfg=cfg,
-                save_pixel=True,
+                save_pixel=save_pixel,
                 skip_existing=skip_existing,
             )
             if rec is not None:
@@ -489,15 +483,15 @@ def generate_gate_report(
 
     report_content = f"""# Stage S05 Gate Report — Urban Microclimate Feature Engineering
 
-- **Date:** {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}
+- **Date:** {datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%d %H:%M:%S UTC')}
 - **Total Cases Processed:** {n_cases}
 - **Numeric NaN Values:** {n_nan}
 - **Numeric Inf Values:** {n_inf}
 - **Total Bad Numeric Values (NaN + Inf):** {n_bad}
 - **Target Leakage Guarantee:** VERIFIED PASS (Wind-speed targets kept completely isolated from predictor feature extractors)
 - **Periodic Boundary Verification:** PASS (Cyclic wrapping verified across periodic distance, multi-scale convolutions, and directional fetch)
-- **Macdonald & Kanda Parameterizations:** PASS (Empirical formulas verified on uniform and variable building canopies)
-- **Multi-channel Spatial Tensor Output:** {len(cfg.channel_names)} channels per case saved as compressed `.npz` files in `outputs/pixel_features/`
+- **Macdonald & Kanda Parameterizations:** PASS (Macdonald et al. 1998; Kanda et al. 2013 in its published form, verified analytically on uniform and variable canopies)
+- **Multi-channel Spatial Tensor:** {len(cfg.channel_names)} channels per case, built on demand by `assemble_pixel_feature_tensor` (written to `outputs/pixel_features/` only with `--save_pixel`)
 - **Elapsed Pipeline Runtime:** {elapsed:.2f} seconds
 
 ## Key Feature Range Summary
@@ -528,9 +522,11 @@ def main():
     parser.add_argument("--cases", nargs="+", default=None, help="Specific cases to process")
     parser.add_argument("--subset", choices=["all", "idealized", "realistic"], default="all", help="Subset to process")
     parser.add_argument("--skip_existing", action="store_true", help="Skip already processed cases")
+    parser.add_argument("--save_pixel", action="store_true",
+                        help="Also write the 22-channel pixel tensors (about 5 GB for all cases)")
     args = parser.parse_args()
 
-    run_pipeline(cases=args.cases, subset=args.subset, skip_existing=args.skip_existing)
+    run_pipeline(cases=args.cases, subset=args.subset, skip_existing=args.skip_existing, save_pixel=args.save_pixel)
 
 
 if __name__ == "__main__":
