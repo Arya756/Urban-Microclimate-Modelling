@@ -1,5 +1,5 @@
 """
-test_nested_cv.py — Focused tests for S06 nested cross-validation protocol.
+test_nested_cv.py: Focused tests for S06 nested cross-validation protocol.
 
 Verifies:
 1. Outer-fold isolation from Optuna tuning.

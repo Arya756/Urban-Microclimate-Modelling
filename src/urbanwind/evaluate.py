@@ -74,6 +74,7 @@ def is_scalar_case_table(df: pd.DataFrame) -> bool:
 def evaluate_scalar_preds(
     pred_source: pathlib.Path | pd.DataFrame,
     splits_path: pathlib.Path | None = None,
+    final_test: bool = False,
 ) -> dict[str, Any]:
     """Evaluate scalar case-level predictions across independent cases.
 
@@ -216,7 +217,7 @@ def evaluate_scalar_preds(
             t_groups = set(s_data.get("test_groups", []))
             dev_groups = set(df["split_group"].dropna())
             overlap = dev_groups.intersection(t_groups)
-            if overlap:
+            if overlap and not final_test:
                 raise AssertionError(f"Frozen test groups detected in evaluation data: {overlap}")
             test_verified = True
         except AssertionError:
@@ -365,6 +366,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="Path to runs.csv (default: results/runs.csv)")
     parser.add_argument("--config", default="",
                         help="Free-text config / hyperparameter summary")
+    parser.add_argument("--final-test", action="store_true",
+                        help="Allow frozen test groups; only for the one-time final scoring (S09, S16)")
     parser.add_argument("--target", default=None,
                         help="Target variable to log for multi-target scalar models (default: U_mean)")
     args = parser.parse_args(argv)
@@ -384,7 +387,7 @@ def main(argv: list[str] | None = None) -> int:
     if csv_path is not None:
         table = pd.read_csv(csv_path)
         if is_scalar_case_table(table):
-            eval_result = evaluate_scalar_preds(table, splits_path=args.splits)
+            eval_result = evaluate_scalar_preds(table, splits_path=args.splits, final_test=args.final_test)
         else:
             eval_result = evaluate_case_preds(csv_path.parent, splits_path=args.splits)
 

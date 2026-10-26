@@ -123,5 +123,5 @@ def leakage_test(splits: dict) -> None:
         f"DATA LEAKAGE: {len(overlap)} group(s) appear in both test and dev folds:\n"
         f"  {sorted(overlap)}"
     )
-    print(f"[leakage_test] PASS — no overlap between {len(test_groups)} test groups "
+    print(f"[leakage_test] PASS: no overlap between {len(test_groups)} test groups "
           f"and {len(dev_groups)} dev groups.")

@@ -1,5 +1,5 @@
 """
-test_evaluation.py — Tests for the scalar and field evaluation logic.
+test_evaluation.py: Tests for the scalar and field evaluation logic.
 
 Covers:
 1. Multi-case scalar evaluation against scikit-learn standard metrics.

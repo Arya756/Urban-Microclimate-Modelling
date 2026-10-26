@@ -1,4 +1,4 @@
-# Stage S05 — Urban Microclimate Feature Engineering
+# Stage S05: Urban Microclimate Feature Engineering
 
 Transforms preprocessed building height rasters, domain geometry, and atmospheric forcing parameters into scientifically validated case-level and pixel-level features for machine learning and deep learning surrogates.
 

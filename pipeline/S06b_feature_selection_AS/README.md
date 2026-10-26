@@ -6,7 +6,7 @@
 
 ---
 
-## 📖 Overview for Beginners
+## Overview for Beginners
 
 In Stage S06, our team built a LightGBM machine learning model to predict the mean pedestrian wind speed of each case (`U_mean`, in units of the case's friction velocity u*). That model used **34 physics-informed features** (such as building height, street canyon width, wind direction, and aerodynamic roughness parameters) and achieves an $R^2$ score of approximately **0.82**.
 
@@ -20,7 +20,7 @@ This **S06b experiment** explores three standard machine learning techniques to 
 
 ---
 
-## 🔍 The Three Approaches Explained
+## The Three Approaches Explained
 
 ### 1. Filter Methods (Fast & Independent of the Model)
 Filter methods evaluate each feature using statistical properties before any machine learning model is trained:
@@ -43,7 +43,7 @@ Instead of looking at features in isolation, wrapper methods use the machine lea
 
 ---
 
-## ⚖️ How S06b Differs from the S06 Ablation
+## How S06b Differs from the S06 Ablation
 
 In Stage S06 (step 3), the team performed a **domain-expert feature ablation**:
 - **Basic (9 features):** Simple building footprint and wind angle.
@@ -54,7 +54,7 @@ In contrast, **S06b does algorithmic feature selection** starting from the full 
 
 ---
 
-## 🛡️ Preventing Data Leakage with Grouped Cross-Validation
+## Preventing Data Leakage with Grouped Cross-Validation
 
 In urban climate datasets, multiple simulation cases often share the same underlying urban geometry (for example, the same street layout tested at different wind angles, $0^\circ$ vs $45^\circ$). 
 
@@ -69,7 +69,7 @@ If we used standard random K-fold cross-validation:
 
 ---
 
-## 🚀 How to Run
+## How to Run
 
 All scripts can be executed directly from the repository root.
 
@@ -102,7 +102,7 @@ PYTHONPATH=. python3 pipeline/S06b_feature_selection_AS/plot_and_consolidate.py
 
 ---
 
-## 📂 Folder Structure and Generated Outputs
+## Folder Structure and Generated Outputs
 
 All code and experiment artifacts are completely contained inside `pipeline/S06b_feature_selection_AS/`:
 
@@ -138,7 +138,7 @@ pipeline/S06b_feature_selection_AS/
 
 ---
 
-## 📊 Summary of Results
+## Summary of Results
 
 ### Overall Performance on Target `U_mean` (5 Outer Folds)
 
@@ -155,7 +155,7 @@ pipeline/S06b_feature_selection_AS/
 
 ---
 
-## 🎯 Final Conclusions and Recommendations
+## Final Conclusions and Recommendations
 
 1. **Keep the full feature set for accuracy.** No selection method beats the 34-feature baseline ($R^2 = 0.8170 \pm 0.0627$). The best reductions are statistically equivalent to it: their mean paired differences are under a quarter of the fold-to-fold spread, with gains and losses mixed across folds.
 

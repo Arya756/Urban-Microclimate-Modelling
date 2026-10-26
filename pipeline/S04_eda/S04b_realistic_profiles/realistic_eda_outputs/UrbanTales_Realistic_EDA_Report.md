@@ -1,4 +1,4 @@
-# UrbanTales Realistic Profile EDA — Run Summary
+# UrbanTales Realistic Profile EDA: Run Summary
 
 - Input: realistic profile CSV files from the UrbanTALES portal
 - Profile CSV files: 314
