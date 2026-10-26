@@ -63,17 +63,19 @@ Pooled $R^2$ is computed over all open cells of all held-out cases, so it reward
 
 ## Diagnostics: where the limit comes from
 
-`s07_diagnostics.py` scores the same model under two other protocols (`outputs/diagnostics_summary.csv`).
+`s07_diagnostics.py` scores the same model under two other protocols, and repeats both with a far less regularised model (2,000 trees, 1,023 leaves, minimum leaf 5) to test capacity (`outputs/diagnostics_summary.csv`).
 
-| Protocol | Median per-case $R^2$, idealized | Median per-case $R^2$, realistic | Pooled $R^2$ |
+| Protocol | Model | Median per-case $R^2$, idealized | Median per-case $R^2$, realistic |
 | --- | --- | --- | --- |
-| Grouped folds (above) | 0.457 | 0.253 | 0.593 |
-| Random 80/20 case split, as in Lu et al. (2025) | 0.438 | 0.258 | 0.448 |
-| 40 of the model's own training cases | 0.781 | 0.371 | 0.658 |
+| Grouped folds (above) | fixed setting | 0.457 | 0.253 |
+| Random 80/20 case split, as in Lu et al. (2025) | fixed setting | 0.438 | 0.258 |
+| Random 80/20 case split | high capacity | 0.463 | 0.253 |
+| 40 of the model's own training cases | fixed setting | 0.781 | 0.371 |
+| 40 of the model's own training cases | high capacity | 0.862 | 0.589 |
 
 - The random split does not help (0.438 and 0.258 against 0.457 and 0.253), so the grouped protocol is not what limits the model.
-- On real neighbourhoods even the training cases reach a median per-case $R^2$ of only 0.371, so the features cannot describe those patterns however much data is added. On one fold, eight times more training cells per case left the score unchanged.
-- The published U-Net reaches per-case $R^2$ of about 0.94 (idealized) and 0.65 (full set) under a random split. Most of that difference is therefore the representation: a convolutional network reads the geometry around every cell directly.
+- More capacity fits the training cases better (realistic 0.371 to 0.589) but leaves the held-out score unchanged (0.258 against 0.253): the extra fit is memorisation. On one fold, eight times more training cells per case also left the score unchanged. The 30 local features, not the split, the data volume or the model capacity, limit what transfers to unseen neighbourhoods.
+- The published U-Net reports per-case $R^2$ of about 0.94 (idealized) and 0.65 (full set) under a random split, with different preprocessing. Most of that difference is therefore likely the representation: a convolutional network reads the geometry around every cell directly.
 
 ## Figures
 
@@ -85,7 +87,7 @@ Pooled $R^2$ is computed over all open cells of all held-out cases, so it reward
 
 ```bash
 uv run python pipeline/S07_pixel_model/s07_pixel_model.py      # about 35 minutes on 10 cores
-uv run python pipeline/S07_pixel_model/s07_diagnostics.py      # about 6 minutes
+uv run python pipeline/S07_pixel_model/s07_diagnostics.py      # about 30 minutes
 for v in pixel_gbm hybrid_gbm level_s06c level_oracle; do
   uv run python -m urbanwind.evaluate results/preds/s07_$v --stage S07
 done
