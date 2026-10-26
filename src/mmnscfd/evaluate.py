@@ -34,7 +34,9 @@ from mmnscfd.metrics import case_metrics, pooled_metrics
 # ---------------------------------------------------------------------------
 # Default paths
 # ---------------------------------------------------------------------------
-REPO_ROOT = pathlib.Path(__file__).parents[3]
+_p2 = pathlib.Path(__file__).parents[2]
+_p3 = pathlib.Path(__file__).parents[3]
+REPO_ROOT = _p2 if (_p2 / "data").exists() else _p3
 DEFAULT_RUNS_CSV = REPO_ROOT / "results" / "runs.csv"
 DEFAULT_SPLITS = REPO_ROOT / "data" / "splits.json"
 
