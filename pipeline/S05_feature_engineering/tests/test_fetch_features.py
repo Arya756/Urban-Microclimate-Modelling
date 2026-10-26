@@ -2,9 +2,7 @@
 test_fetch_features.py – Unit tests for directional fetch raymarching, upwind height bands, and flow orientations.
 """
 
-import math
 import numpy as np
-import pytest
 
 from pipeline.S05_feature_engineering.fetch_features import compute_directional_fetch_maps
 

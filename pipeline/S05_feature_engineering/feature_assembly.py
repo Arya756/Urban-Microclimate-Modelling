@@ -267,7 +267,7 @@ def load_normalized_target(
         Friction velocity for this case.
     topo_H : np.ndarray, optional
         2D building height array (Ny, Nx), already corrected for row orientation
-        via np.flipud (Issue 1 fix).  When provided, cells where topo_H > 0 are
+        via np.flipud.  When provided, cells where topo_H > 0 are
         unconditionally treated as building cells and excluded from valid_mask,
         regardless of whether _ped.nc stores NaN, zero, or a spurious finite value
         at that location.  Legitimate zero-valued wind targets on open ground
@@ -298,14 +298,14 @@ def load_normalized_target(
     # Build valid mask: start from finite, non-NaN cells in the wind map.
     valid_mask = np.isfinite(u_arr)
 
-    # Issue 2 fix: additionally exclude building cells identified by the
+    # Additionally exclude building cells identified by the
     # topography matrix, which is authoritative for building/open classification.
     # This removes CFD perimeter artefacts that ped.nc does not mark as NaN.
     if topo_H is not None:
         if topo_H.shape != u_arr.shape:
             raise ValueError(
                 f"topo_H shape {topo_H.shape} does not match Uped shape {u_arr.shape}. "
-                "Ensure topo_H has been corrected with np.flipud (Issue 1 fix) before calling."
+                "Ensure topo_H has been corrected with np.flipud before calling."
             )
         valid_mask &= (topo_H == 0.0)  # exclude building cells (H > 0)
 

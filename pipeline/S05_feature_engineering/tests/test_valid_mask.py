@@ -1,5 +1,5 @@
 """
-test_valid_mask.py - Regression tests for S05 Issue 2: valid pedestrian
+test_valid_mask.py - Regression tests for valid pedestrian
 wind target cell identification.
 
 Root cause: 163 cases (160 realistic, 3 idealized) have finite (non-NaN)
@@ -25,8 +25,6 @@ These tests verify:
 from __future__ import annotations
 
 import pathlib
-import tempfile
-import struct
 
 import h5py
 import numpy as np
@@ -182,7 +180,7 @@ class TestValidMaskSynthetic:
 
     def test_orientation_consistency_with_issue1_fix(self, tmp_path):
         """
-        Simulate the Issue 1 + Issue 2 interaction: topo_H must be the
+        Simulate the flip and mask interaction: topo_H must be the
         flipud-corrected array so it matches the ped.nc spatial frame.
         """
         # Topo as stored (top-row-first): building at row 0
@@ -193,7 +191,7 @@ class TestValidMaskSynthetic:
         u = np.array([[0.8, 0.9],    # open cells (row 0 in ped.nc frame)
                       [0.3, np.nan]], dtype=np.float32)   # row 1: artefact + NaN
 
-        # Issue 1 fix: flip before use
+        # Flip the raster before use
         H_corrected = np.flipud(H_stored)
         # Now H_corrected[1] = [5,5] = building, H_corrected[0] = [0,0] = open
         # ped.nc row 1: artefact value 0.3 at building [1,0] + NaN at [1,1]

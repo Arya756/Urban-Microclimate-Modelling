@@ -4,7 +4,6 @@ test_spatial_features.py – Unit tests for periodic distance transform and mult
 
 import math
 import numpy as np
-import pytest
 
 from pipeline.S05_feature_engineering.spatial_features import (
     compute_multiscale_density_maps,

@@ -1,7 +1,6 @@
 """
 S06b: Feature Selection Experiments (Filter & Wrapper)
 Stage: S06b
-Owner: AS
 
 Implements and evaluates:
   1. Baseline (34 Physics features, LightGBM 400 trees, lr=0.05)

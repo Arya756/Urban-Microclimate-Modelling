@@ -18,3 +18,10 @@ results/preds/
 
 # OS
 .DS_Store
+
+# Personal learning notebooks
+learning/
+
+# Large derived tables that the S04 notebooks regenerate
+pipeline/S04_eda/S04a_idealized_profiles/urbantales_idealized_eda_outputs/combined_profiles_eda.csv
+pipeline/S04_eda/S04b_realistic_profiles/realistic_eda_outputs/combined_realistic_profiles_cleaned.csv

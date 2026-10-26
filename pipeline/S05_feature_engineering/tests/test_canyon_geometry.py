@@ -3,7 +3,6 @@ test_canyon_geometry.py – Unit tests for canyon width and aspect ratio computa
 """
 
 import numpy as np
-import pytest
 
 from pipeline.S05_feature_engineering.spatial_features import (
     compute_canyon_geometry,

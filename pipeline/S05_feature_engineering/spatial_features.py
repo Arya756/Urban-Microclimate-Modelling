@@ -10,7 +10,6 @@ from typing import Any, Dict, Sequence, Tuple
 import numpy as np
 from scipy import ndimage
 
-from .config import DEFAULT_CONFIG, FeatureConfig
 
 
 @dataclass(frozen=True)

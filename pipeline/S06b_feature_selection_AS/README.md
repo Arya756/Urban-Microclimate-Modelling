@@ -1,7 +1,6 @@
 # Stage S06b: Feature Selection and PCA Experiments
 
 **Stage:** S06b (Isolated Sub-experiment)  
-**Author/Owner:** AS  
 **Repository:** [Urban-Microclimate-Modelling](https://github.com/mahir-m01/Urban-Microclimate-Modelling)  
 **Branch:** `feature/s06b-feature-selection-pca`  
 
@@ -171,4 +170,4 @@ pipeline/S06b_feature_selection_AS/
 3. **Avoid PCA for Tree-Based Urban Microclimate Surrogates:**
    - While PCA successfully captures 95% variance with only 11 components, LightGBM accuracy drops by $\sim 0.072$ in $R^2$ because orthogonal linear combinations blur sharp, localized physical thresholds.
 
-For the full detailed scientific findings and answers to all prompt questions, see [`outputs/experiment_report.md`](file:///Users/aparnasingh/Downloads/urban-climate/Urban-Microclimate-Modelling/pipeline/S06b_feature_selection_AS/outputs/experiment_report.md).
+For the full detailed scientific findings and answers to the research questions, see [`outputs/experiment_report.md`](outputs/experiment_report.md).

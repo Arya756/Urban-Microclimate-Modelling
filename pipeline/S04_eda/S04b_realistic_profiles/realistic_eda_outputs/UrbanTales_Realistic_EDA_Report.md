@@ -1,6 +1,6 @@
 # UrbanTales Realistic Profile EDA — Run Summary
 
-- ZIP file: /Users/neerajsingh/Downloads/selected_files (9).zip
+- Input: realistic profile CSV files from the UrbanTALES portal
 - Profile CSV files: 314
 - Unique cases: 314
 - Raw combined shape: (40820, 32)

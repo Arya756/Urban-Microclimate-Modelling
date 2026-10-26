@@ -1,7 +1,6 @@
 # Stage S06 Gate Report — Case-Level Models
 
 - **Date:** 2026-10-25 20:26 UTC  
-- **Owner:** M3  
 - **Stage:** S06  
 - **Dev Cases:** 482 (idealized: 190 · realistic: 292)  
 - **Frozen Test Groups:** 24 — NOT OPENED  

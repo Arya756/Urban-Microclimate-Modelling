@@ -1,7 +1,6 @@
 """
 Feature Selection and PCA Utilities for S06b.
 Stage: S06b
-Owner: AS
 
 Provides leakage-free utilities for:
   - Dataset construction and validation (excluding frozen test groups)
@@ -17,7 +16,7 @@ from __future__ import annotations
 import json
 import pathlib
 import time
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List, Tuple
 
 import lightgbm as lgb
 import numpy as np

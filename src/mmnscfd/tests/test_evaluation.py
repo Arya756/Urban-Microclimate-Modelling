@@ -1,5 +1,5 @@
 """
-test_evaluation.py — Comprehensive tests for Issue 5 evaluation logic.
+test_evaluation.py — Tests for the scalar and field evaluation logic.
 
 Covers:
 1. Multi-case scalar evaluation against scikit-learn standard metrics.
@@ -35,7 +35,6 @@ sys.path.insert(0, str(SRC_DIR))
 sys.path.insert(0, str(REPO_ROOT))
 
 from mmnscfd.evaluate import (
-    evaluate_case_preds,
     evaluate_scalar_preds,
     is_scalar_case_table,
 )

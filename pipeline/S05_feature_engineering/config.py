@@ -4,7 +4,6 @@ config.py – Configuration parameters, constants, and paths for Stage S05 (Feat
 
 from __future__ import annotations
 
-import os
 import pathlib
 from dataclasses import dataclass, field
 from typing import Sequence

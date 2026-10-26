@@ -1,6 +1,5 @@
 # Stage S06 — Case-Level Regression Surrogate Models
 
-**Owner:** M3
 **Stage:** S06 (Phase 1 — AML)
 **Status:** ✅ Gate Passed
 **Date:** 2026-10-25
@@ -86,8 +85,7 @@ Exp ID: `s06_lgbm_default_physics_v1`
 ```
 pipeline/S06_case_models/
 ├── run_s06.py                        # Reproducible pipeline script (all 14 steps)
-├── S06a_case_models_m3.ipynb         # Jupyter notebook (interactive version)
-├── s06_case_level_models.ipynb       # Annotated tutorial notebook
+├── S06a_case_models.ipynb            # Jupyter notebook (interactive version)
 └── outputs/
     ├── S06_gate_report.md            # Full gate report (all numbers, all tables)
     ├── ablation_table.csv            # Feature-set ablation results
@@ -149,13 +147,13 @@ All other dependencies (`numpy`, `pandas`, `scikit-learn`, `scipy`) are already 
 
 ---
 
-## S06 Issue 6 — Case Readiness, Topography Alignment, and Exclusions
+## Case Readiness, Topography Alignment, and Exclusions
 
 ### Overview & Root-Cause Resolution
 During dataset auditing, concerns were raised regarding six simulation cases:
 - **`JP-Tok-V4_d00` (Simulation Duration):** The simulation ran for 4.91 hours (17,689 s, 8,834 timesteps) before stopping (due to an HPC walltime cutoff relative to the 12-hour nominal setup). Verification of the turbulence time series demonstrates that the flow field achieved turbulent stationarity well before termination (final TKE CV = 1.99%, well below the 10% threshold; duration exceeds the 2.0 h spin-up limit by 2.45x). Complete 34 physics features exist in S05, valid ground targets load without error, and out-of-fold prediction is physically sound (residual: -0.024 m/s).
-- **`UG-UG-U1_d00`, `UG-UG-U2_d00`, `UG-UG-U3_d00` & `AU-Mel-U9_d00` (Topography Mismatches):** Topography and pedestrian target grid dimensions match identically. Prior to S05 Issue 1 (`np.flipud(H)`), top-row-first file storage inverted the y-axis relative to NetCDF arrays, causing apparent mask divergence (~50%). With vertical orientation corrected, mask agreement reaches 90.2%–96.6%. The remaining differences are sub-grid CFD boundary interpolation artefacts at building perimeters.
-- **`NP-NP-U1_d00` ("Buildings Hold Wind Values"):** NetCDF stored numerical zeros or face-staggered velocities within 3,120 building footprint cells. Enforcing `topo_H == 0.0` as the authoritative ground mask (S05 Issue 2) unconditionally zeroes and masks all 81,724 building cells, yielding 116,543 valid pedestrian cells.
+- **`UG-UG-U1_d00`, `UG-UG-U2_d00`, `UG-UG-U3_d00` & `AU-Mel-U9_d00` (Topography Mismatches):** Topography and pedestrian target grid dimensions match identically. Before the `np.flipud(H)` correction, top-row-first file storage inverted the y-axis relative to NetCDF arrays, causing apparent mask divergence (~50%). With vertical orientation corrected, mask agreement reaches 90.2%–96.6%. The remaining differences are sub-grid CFD boundary interpolation artefacts at building perimeters.
+- **`NP-NP-U1_d00` ("Buildings Hold Wind Values"):** NetCDF stored numerical zeros or face-staggered velocities within 3,120 building footprint cells. Enforcing `topo_H == 0.0` as the authoritative ground mask unconditionally zeroes and masks all 81,724 building cells, yielding 116,543 valid pedestrian cells.
 
 ### Auditable Exclusions
 Only three cases across all 538 dataset cases remain excluded from model training:

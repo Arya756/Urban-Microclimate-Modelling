@@ -1,7 +1,6 @@
 """
 Plotting and Results Consolidation for S06b.
 Stage: S06b
-Owner: AS
 
 Merges Feature Selection and PCA outputs into master unified tables:
   - outputs/fold_metrics.csv
