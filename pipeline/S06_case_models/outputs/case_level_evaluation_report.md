@@ -1,7 +1,7 @@
 # Stage S06: Corrected Case-Level Evaluation Report
 
 ## 1. Executive Summary
-This report documents the correction of the **case-level evaluation logic** in the Urban Microclimate Modelling repository. The evaluation harness in `src/mmnscfd/evaluate.py` has been updated to evaluate scalar case-level models across independent cases per target, completely resolving the historical bug where metrics were calculated across heterogeneous targets within each case.
+This report documents the correction of the **case-level evaluation logic** in the Urban Microclimate Modelling repository. The evaluation harness in `src/urbanwind/evaluate.py` has been updated to evaluate scalar case-level models across independent cases per target, completely resolving the historical bug where metrics were calculated across heterogeneous targets within each case.
 
 - **Primary Target:** `U_mean`
 - **Model:** LightGBM Regressor (34 physics features)
@@ -15,7 +15,7 @@ This report documents the correction of the **case-level evaluation logic** in t
 
 ### The Mechanism
 In historical runs (e.g. `pipeline/S06_case_models/run_s06.py`), `case_preds.csv` was written with 4 scalar targets per case (`U_mean`, `U_p95`, `U_std`, `TKE_mean`), yielding $4 \times 482 = 1928$ rows.
-The CLI script `src/mmnscfd/evaluate.py` implemented:
+The CLI script `src/urbanwind/evaluate.py` implemented:
 ```python
 for case, grp in df.groupby("case"):
     m = case_metrics(y_true=grp["y_true"].values, y_pred=grp["y_pred"].values)

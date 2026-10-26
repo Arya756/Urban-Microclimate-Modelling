@@ -3,7 +3,7 @@ evaluate.py – CLI evaluation script.
 
 Usage
 -----
-    python -m mmnscfd.evaluate <pred_dir> [--exp-id EXP_ID] [--stage STAGE]
+    python -m urbanwind.evaluate <pred_dir> [--exp-id EXP_ID] [--stage STAGE]
                                [--splits PATH] [--out runs.csv]
 
 The prediction directory must contain one of:
@@ -23,11 +23,13 @@ import pathlib
 import subprocess
 import sys
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 
 # Relative import from the same package
-from mmnscfd.metrics import case_metrics, pooled_metrics, regression_metrics
+from urbanwind.metrics import case_metrics, pooled_metrics, regression_metrics
 
 # ---------------------------------------------------------------------------
 # Default paths
@@ -39,19 +41,15 @@ DEFAULT_RUNS_CSV = REPO_ROOT / "results" / "runs.csv"
 DEFAULT_SPLITS = REPO_ROOT / "data" / "splits.json"
 
 RUNS_HEADER = [
-    "exp_id", "date", "stage", "owner", "git_sha", "split_hash",
+    "exp_id", "date", "stage", "git_sha", "split_hash",
     "pred_dir", "n_cases",
     "pooled_mae", "pooled_rmse", "pooled_r2",
-    "median_nrmse", "median_ssim",
+    "median_nrmse", "median_corr",
     "mean_delta_p95", "mean_delta_max",
     "mean_level_err", "mean_pattern_err",
     "config",
 ]
 
-
-# ---------------------------------------------------------------------------
-# Main evaluation logic
-# ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
 # Main evaluation logic
@@ -323,6 +321,14 @@ def _split_hash(splits_path: pathlib.Path) -> str:
         return "none"
 
 
+def _relative(path: pathlib.Path) -> str:
+    """Repository-relative path, so runs.csv does not record machine-specific paths."""
+    try:
+        return str(path.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(path)
+
+
 def _ensure_runs_csv(path: pathlib.Path) -> None:
     if not path.exists():
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -353,8 +359,6 @@ def main(argv: list[str] | None = None) -> int:
                         help="Experiment identifier (default: pred_dir basename)")
     parser.add_argument("--stage", default="S??",
                         help="Pipeline stage tag, e.g. S06")
-    parser.add_argument("--owner", default="",
-                        help="Your member ID, e.g. M3")
     parser.add_argument("--splits", type=pathlib.Path, default=DEFAULT_SPLITS,
                         help="Path to splits.json")
     parser.add_argument("--out", type=pathlib.Path, default=DEFAULT_RUNS_CSV,
@@ -371,16 +375,18 @@ def main(argv: list[str] | None = None) -> int:
     print(f"[evaluate] Scoring {pred_dir} (exp_id={exp_id})")
 
     # Try case-level first, then field-level
-    has_csv = (
-        (pred_dir.is_file() and pred_dir.suffix == ".csv")
-        or (pred_dir / "case_preds.csv").exists()
-        or (pred_dir / "nested_oof_predictions.csv").exists()
-        or (pred_dir / "oof_preds.csv").exists()
-    )
+    csv_names = ("case_preds.csv", "nested_oof_predictions.csv", "oof_preds.csv")
+    if pred_dir.is_file() and pred_dir.suffix == ".csv":
+        csv_path = pred_dir
+    else:
+        csv_path = next((pred_dir / n for n in csv_names if (pred_dir / n).exists()), None)
 
-    if has_csv:
-        csv_file = pred_dir if pred_dir.is_file() else None
-        eval_result = evaluate_scalar_preds(csv_file or pred_dir, splits_path=args.splits) if (csv_file or is_scalar_case_table(pd.read_csv(csv_file or next(p for p in [pred_dir / "case_preds.csv", pred_dir / "nested_oof_predictions.csv", pred_dir / "oof_preds.csv"] if p.exists())))) else evaluate_case_preds(pred_dir, splits_path=args.splits)
+    if csv_path is not None:
+        table = pd.read_csv(csv_path)
+        if is_scalar_case_table(table):
+            eval_result = evaluate_scalar_preds(table, splits_path=args.splits)
+        else:
+            eval_result = evaluate_case_preds(csv_path.parent, splits_path=args.splits)
 
         if isinstance(eval_result, dict) and eval_result.get("mode") == "scalar":
             targets = eval_result["targets"]
@@ -400,7 +406,7 @@ def main(argv: list[str] | None = None) -> int:
                 "pooled_rmse": primary_m["rmse"],
                 "pooled_r2": primary_m["r2"],
                 "median_nrmse": primary_m["rmse"] / primary_m["mean_true"] if primary_m["mean_true"] > 0 else float("nan"),
-                "median_ssim": float("nan"),  # Non-applicable for scalar case models
+                "median_corr": float("nan"),  # not applicable to scalar case models
                 "mean_delta_p95": float("nan"),
                 "mean_delta_max": float("nan"),
                 "mean_level_err": float((primary_m["mean_pred"] - primary_m["mean_true"]) ** 2),
@@ -417,12 +423,11 @@ def main(argv: list[str] | None = None) -> int:
 
     row = {
         "exp_id": exp_id,
-        "date": datetime.datetime.utcnow().isoformat(timespec="seconds"),
+        "date": datetime.datetime.now(datetime.UTC).replace(tzinfo=None).isoformat(timespec="seconds"),
         "stage": args.stage,
-        "owner": args.owner,
         "git_sha": _git_sha(),
         "split_hash": _split_hash(args.splits),
-        "pred_dir": str(pred_dir),
+        "pred_dir": _relative(pred_dir),
         "config": args.config,
         **pooled,
     }

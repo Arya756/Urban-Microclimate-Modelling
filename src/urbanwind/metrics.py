@@ -37,8 +37,9 @@ def case_metrics(
 
     Returns
     -------
-    dict with keys: case, n, mae, rmse, r2, nrmse, within_r2, ssim,
+    dict with keys: case, n, mae, rmse, r2, nrmse, within_r2, corr,
                     delta_p95, delta_max, level_err, pattern_err.
+    corr is the Pearson correlation of the two open-ground fields (pattern agreement).
     """
     y_true = np.asarray(y_true, dtype=float).ravel()
     y_pred = np.asarray(y_pred, dtype=float).ravel()
@@ -66,13 +67,13 @@ def case_metrics(
     # Within-case R² is the same as case R² for flat arrays
     within_r2 = r2
 
-    # SSIM (simplified, scalar version: pearson correlation of standardised arrays)
+    # Pattern correlation: Pearson correlation of the open-ground fields
     std_true = y_true.std()
     std_pred = y_pred.std()
     if std_true > 0 and std_pred > 0:
-        ssim = float(np.corrcoef(y_true, y_pred)[0, 1])
+        corr = float(np.corrcoef(y_true, y_pred)[0, 1])
     else:
-        ssim = float("nan")
+        corr = float("nan")
 
     # Peak-speed errors
     p95_true = float(np.percentile(y_true, 95))
@@ -96,7 +97,7 @@ def case_metrics(
         "r2": r2,
         "nrmse": nrmse,
         "within_r2": within_r2,
-        "ssim": ssim,
+        "corr": corr,
         "delta_p95": delta_p95,
         "delta_max": delta_max,
         "level_err": level_err,
@@ -108,7 +109,7 @@ def _empty_metrics(case: str) -> dict[str, Any]:
     nan = float("nan")
     return {
         "case": case, "n": 0, "mae": nan, "rmse": nan, "r2": nan,
-        "nrmse": nan, "within_r2": nan, "ssim": nan,
+        "nrmse": nan, "within_r2": nan, "corr": nan,
         "delta_p95": nan, "delta_max": nan, "level_err": nan, "pattern_err": nan,
     }
 
@@ -121,7 +122,7 @@ def pooled_metrics(per_case: list[dict[str, Any]]) -> dict[str, Any]:
     """Case-weighted aggregate from a list of case_metrics dicts.
 
     Returns a dict with prefixed keys: pooled_mae, pooled_rmse, pooled_r2,
-    median_nrmse, median_ssim, mean_delta_p95, mean_delta_max,
+    median_nrmse, median_corr, mean_delta_p95, mean_delta_max,
     mean_level_err, mean_pattern_err, n_cases.
     """
     valid = [d for d in per_case if d["n"] > 0]
@@ -143,7 +144,7 @@ def pooled_metrics(per_case: list[dict[str, Any]]) -> dict[str, Any]:
         "pooled_rmse": _nanmean("rmse"),
         "pooled_r2": _nanmean("r2"),
         "median_nrmse": _nanmedian("nrmse"),
-        "median_ssim": _nanmedian("ssim"),
+        "median_corr": _nanmedian("corr"),
         "mean_delta_p95": _nanmean("delta_p95"),
         "mean_delta_max": _nanmean("delta_max"),
         "mean_level_err": _nanmean("level_err"),

@@ -997,63 +997,6 @@ wheels = [
 ]
 
 [[package]]
-name = "mmnscfd"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "f90nml" },
-    { name = "h5py" },
-    { name = "lightgbm" },
-    { name = "matplotlib" },
-    { name = "netcdf4" },
-    { name = "numpy" },
-    { name = "optuna" },
-    { name = "pandas" },
-    { name = "pyarrow" },
-    { name = "scikit-learn" },
-    { name = "scipy" },
-    { name = "seaborn" },
-    { name = "shap" },
-    { name = "xarray" },
-    { name = "xgboost" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "ipykernel" },
-    { name = "nbconvert" },
-    { name = "pytest" },
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "f90nml", specifier = ">=1.4" },
-    { name = "h5py", specifier = ">=3.11" },
-    { name = "lightgbm", specifier = ">=4.5" },
-    { name = "matplotlib", specifier = ">=3.9" },
-    { name = "netcdf4", specifier = ">=1.7" },
-    { name = "numpy", specifier = ">=2.0" },
-    { name = "optuna", specifier = ">=4.0" },
-    { name = "pandas", specifier = ">=2.2" },
-    { name = "pyarrow", specifier = ">=17" },
-    { name = "scikit-learn", specifier = ">=1.5" },
-    { name = "scipy", specifier = ">=1.13" },
-    { name = "seaborn", specifier = ">=0.13" },
-    { name = "shap", specifier = ">=0.46" },
-    { name = "xarray", specifier = ">=2024.6" },
-    { name = "xgboost", specifier = ">=2.1" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "ipykernel", specifier = ">=6.29" },
-    { name = "nbconvert", specifier = ">=7.16" },
-    { name = "pytest", specifier = ">=8.3" },
-    { name = "ruff", specifier = ">=0.6" },
-]
-
-[[package]]
 name = "narwhals"
 version = "2.27.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2262,6 +2205,63 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/d9/68/f1b440335057bfce71b6e50a9d09445aa2ecbd08359a337976627b8409e7/tzdata-2026.5.tar.gz", hash = "sha256:8cc73c0a0bfca7dbfa59235d60b2eff82231dee33f53d206db1acd9173cfc0a7", size = 200404, upload-time = "2026-10-03T09:23:14.143Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/94/21/1e5995a1c920cce14e4bffae20c665ec10e7ed03ab25e006cd741092b718/tzdata-2026.5-py2.py3-none-any.whl", hash = "sha256:b683bd1b6659ddcd810ff02ad09ba821d4bf1065072805063eb35c49617905ac", size = 347996, upload-time = "2026-10-03T09:23:12.535Z" },
+]
+
+[[package]]
+name = "urbanwind"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "f90nml" },
+    { name = "h5py" },
+    { name = "lightgbm" },
+    { name = "matplotlib" },
+    { name = "netcdf4" },
+    { name = "numpy" },
+    { name = "optuna" },
+    { name = "pandas" },
+    { name = "pyarrow" },
+    { name = "scikit-learn" },
+    { name = "scipy" },
+    { name = "seaborn" },
+    { name = "shap" },
+    { name = "xarray" },
+    { name = "xgboost" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "ipykernel" },
+    { name = "nbconvert" },
+    { name = "pytest" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "f90nml", specifier = ">=1.4" },
+    { name = "h5py", specifier = ">=3.11" },
+    { name = "lightgbm", specifier = ">=4.5" },
+    { name = "matplotlib", specifier = ">=3.9" },
+    { name = "netcdf4", specifier = ">=1.7" },
+    { name = "numpy", specifier = ">=2.0" },
+    { name = "optuna", specifier = ">=4.0" },
+    { name = "pandas", specifier = ">=2.2" },
+    { name = "pyarrow", specifier = ">=17" },
+    { name = "scikit-learn", specifier = ">=1.5" },
+    { name = "scipy", specifier = ">=1.13" },
+    { name = "seaborn", specifier = ">=0.13" },
+    { name = "shap", specifier = ">=0.46" },
+    { name = "xarray", specifier = ">=2024.6" },
+    { name = "xgboost", specifier = ">=2.1" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "ipykernel", specifier = ">=6.29" },
+    { name = "nbconvert", specifier = ">=7.16" },
+    { name = "pytest", specifier = ">=8.3" },
+    { name = "ruff", specifier = ">=0.6" },
 ]
 
 [[package]]

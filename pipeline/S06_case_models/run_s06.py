@@ -15,7 +15,7 @@ Runs:
   10. Feature importance
   11. 5 figures
   12. Contract-format predictions -> results/preds/s06_lgbm_tuned_physics_v1/case_preds.csv
-  13. Scoring via mmnscfd.evaluate -> results/runs.csv
+  13. Scoring via urbanwind.evaluate -> results/runs.csv
   14. Gate report -> pipeline/S06_case_models/outputs/S06_gate_report.md
 
 Usage:
@@ -537,7 +537,7 @@ print(f"Saved: {pred_csv}  ({len(records)} rows)")
 # STEP 13: Score via evaluate.py
 # ---------------------------------------------------------------------------
 print("\n" + "=" * 60)
-print("STEP 13 -- mmnscfd.evaluate")
+print("STEP 13 -- urbanwind.evaluate")
 print("=" * 60)
 
 config_str = (
@@ -547,7 +547,7 @@ config_str = (
     f"+leaves={best_params.get('num_leaves','?')}"
 )
 res = subprocess.run(
-    [sys.executable, "-m", "mmnscfd.evaluate",
+    [sys.executable, "-m", "urbanwind.evaluate",
      str(PRED_DIR),
      "--exp-id", EXP_ID,
      "--stage",  "S06",
