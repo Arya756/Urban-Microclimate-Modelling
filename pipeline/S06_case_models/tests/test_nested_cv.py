@@ -10,7 +10,6 @@ Verifies:
 6. Repeatable split construction and output generation.
 """
 
-import json
 import math
 import pathlib
 import sys
@@ -28,8 +27,6 @@ sys.path.insert(0, str(REPO_ROOT))
 sys.path.insert(0, str(STAGE_DIR))
 
 from pipeline.S06_case_models.nested_tuning import (
-    PHYSICS_FEATURES,
-    REPO,
     load_development_data,
     run_nested_cv,
 )

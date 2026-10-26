@@ -4,7 +4,6 @@ test_morphology.py – Unit tests for building height statistics, plan-area dens
 
 import math
 import numpy as np
-import pytest
 
 from pipeline.S05_feature_engineering.morphology import compute_morphology_features
 from pipeline.S05_feature_engineering.orientation_features import compute_directional_morphology

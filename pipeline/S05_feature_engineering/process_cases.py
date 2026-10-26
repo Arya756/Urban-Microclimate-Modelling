@@ -12,7 +12,6 @@ import argparse
 import datetime
 import json
 import logging
-import os
 import pathlib
 import sys
 import time
@@ -30,7 +29,6 @@ if __package__ is None or __package__ == "":
         assemble_pixel_feature_tensor,
         load_normalized_target,
     )
-    from pipeline.S05_feature_engineering.validation import validate_height_map
 else:
     from .config import DEFAULT_CONFIG, FeatureConfig
     from .feature_assembly import (
@@ -38,7 +36,6 @@ else:
         assemble_pixel_feature_tensor,
         load_normalized_target,
     )
-    from .validation import validate_height_map
 
 
 logging.basicConfig(

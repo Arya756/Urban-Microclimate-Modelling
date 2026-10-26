@@ -1,7 +1,6 @@
 # S06b Experiment Report: Feature Selection and PCA Experiments
 
 - **Stage:** S06b (Isolated Sub-experiment)
-- **Author/Owner:** AS
 - **Date:** 2026-10-26
 - **Target Variable:** `U_mean` (Pedestrian wind speed mean, m/s)
 - **Dataset:** 482 Development cases (190 Idealized, 292 Realistic) across 5 Grouped Folds
@@ -115,7 +114,7 @@ As required by Section 8, subset evaluations were run strictly on subset-restric
 
 ---
 
-## 5. Answers to Mandatory Prompt Questions
+## 5. Answers to the Research Questions
 
 ### 1. Can filter methods reduce 34 features without materially hurting performance?
 **Yes.** F-test top 20 reduces the feature count from 34 to 20 ($41\%$ reduction) while performing comparably to the baseline ($R^2 = 0.8284 \pm 0.0508$ vs. baseline $0.8217 \pm 0.0552$). The small numerical difference ($+0.0067$) is inconsistent across folds and within fold-to-fold noise. Correlation filtering ($\tau = 0.95$) reduces 7 collinear features to 27, yielding $R^2 = 0.8095 \pm 0.0566$.

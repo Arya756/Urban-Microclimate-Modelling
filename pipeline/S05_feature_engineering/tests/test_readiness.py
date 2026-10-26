@@ -1,5 +1,5 @@
 """
-test_readiness.py – Unit and regression tests for S06 Issue 6: model readiness
+test_readiness.py – Unit and regression tests for model readiness
 flags, exclusions, topography alignment, and split isolation.
 
 Tests verify:
@@ -18,13 +18,12 @@ from __future__ import annotations
 
 import json
 import pathlib
-import tempfile
 import h5py
 import numpy as np
 import pandas as pd
 import pytest
 
-from pipeline.S05_feature_engineering.config import DEFAULT_CONFIG, FeatureConfig
+from pipeline.S05_feature_engineering.config import FeatureConfig
 from pipeline.S05_feature_engineering.feature_assembly import load_normalized_target
 from pipeline.S05_feature_engineering.process_cases import process_single_case
 
@@ -99,7 +98,7 @@ class TestReadinessSynthetic:
 
     def test_corrected_flipud_orientation_with_valid_mask(self, tmp_path: pathlib.Path):
         """
-        Verify that vertically flipping topography (Issue 1) aligns with NetCDF
+        Verify that vertically flipping topography aligns with NetCDF
         orientation to accurately mask ground vs building cells.
         """
         ny, nx = 30, 30

@@ -1,11 +1,11 @@
-# Stage S06 Issue 5: Corrected Case-Level Evaluation Report
+# Stage S06: Corrected Case-Level Evaluation Report
 
 ## 1. Executive Summary
-This report documents the resolution of **Issue 5: Case-Level Evaluation Logic** in the Urban Microclimate Modelling repository. The evaluation harness in `src/mmnscfd/evaluate.py` has been updated to evaluate scalar case-level models across independent cases per target, completely resolving the historical bug where metrics were calculated across heterogeneous targets within each case.
+This report documents the correction of the **case-level evaluation logic** in the Urban Microclimate Modelling repository. The evaluation harness in `src/mmnscfd/evaluate.py` has been updated to evaluate scalar case-level models across independent cases per target, completely resolving the historical bug where metrics were calculated across heterogeneous targets within each case.
 
 - **Primary Target:** `U_mean`
 - **Model:** LightGBM Regressor (34 physics features)
-- **Validation Protocol:** 5-fold outer GroupKFold × 3-fold inner GroupKFold (Leakage-Safe Nested Optuna CV from Issue 4)
+- **Validation Protocol:** 5-fold outer GroupKFold × 3-fold inner GroupKFold (leakage-safe nested Optuna CV)
 - **Development Sample Size:** 482 unique cases (190 idealized, 292 realistic) across 136 spatial groups
 - **Frozen Test Exclusion:** All 24 frozen test groups (53 cases) verified 100% excluded
 
@@ -37,7 +37,7 @@ and then averaged these case dicts with `pooled_metrics()`.
 
 ## 3. Corrected Evaluation Results
 
-All metrics below are computed across independent cases for `U_mean` using the nested out-of-fold predictions from Issue 4 ([`nested_oof_predictions.csv`](file:///Users/aparnasingh/Downloads/urban-climate/Urban-Microclimate-Modelling/pipeline/S06_case_models/outputs/nested_oof_predictions.csv)).
+All metrics below are computed across independent cases for `U_mean` using the nested out-of-fold predictions ([`nested_oof_predictions.csv`](outputs/nested_oof_predictions.csv)).
 
 ### Overall Development and Subset Metrics
 | Partition | Cases ($N$) | Pooled $R^2$ | MAE (m/s) | RMSE (m/s) | Ground Truth Mean | Prediction Mean | Ground Truth Std | Prediction Std |
@@ -78,5 +78,5 @@ The following historical artifacts remain untouched and preserved for auditabili
 ---
 
 ## 6. Limitations and Assumptions
-1. **Target Specificity:** Scalar evaluation requires evaluating each target independently. S06 Issue 4 nested cross-validation specifically optimized the primary project target `U_mean`. Additional targets (`U_p95`, `U_std`, `TKE_mean`) should be evaluated using separate dedicated nested runs if needed.
+1. **Target Specificity:** Scalar evaluation requires evaluating each target independently. The S06 nested cross-validation specifically optimized the primary project target `U_mean`. Additional targets (`U_p95`, `U_std`, `TKE_mean`) should be evaluated using separate dedicated nested runs if needed.
 2. **Spatial Metric Inapplicability:** Spatial field metrics (`median_ssim`, `mean_pattern_err`, `delta_p95`, `delta_max`) are physically meaningless for scalar models and are logged as `NaN`.

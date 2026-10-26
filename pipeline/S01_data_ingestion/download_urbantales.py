@@ -13,7 +13,6 @@ import concurrent.futures as cf
 import csv
 import os
 import socket
-import sys
 import time
 import urllib.request
 

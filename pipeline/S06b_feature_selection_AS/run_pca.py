@@ -1,7 +1,6 @@
 """
 S06b: Principal Component Analysis (PCA) Experiments
 Stage: S06b
-Owner: AS
 
 Implements and evaluates:
   1. PCA dimensionality reduction with variance retention thresholds: 90%, 95%, 99%
@@ -20,11 +19,10 @@ import argparse
 import pathlib
 import sys
 import time
-from typing import Dict, List, Any
+from typing import Dict, Any
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import mean_absolute_error, r2_score, root_mean_squared_error
 
 # Setup imports
 CURRENT_DIR = pathlib.Path(__file__).resolve().parent

@@ -1,6 +1,6 @@
 """
 S06 Case-Level Models -- Urban Microclimate Surrogate
-Owner: M3  |  Stage: S06
+Stage: S06
 
 Runs:
   1. B1 baseline reproduction (RF + basic features)
@@ -24,7 +24,6 @@ Usage:
 from __future__ import annotations
 
 import json
-import os
 import pathlib
 import subprocess
 import sys
@@ -552,7 +551,6 @@ res = subprocess.run(
      str(PRED_DIR),
      "--exp-id", EXP_ID,
      "--stage",  "S06",
-     "--owner",  "M3",
      "--config", config_str],
     capture_output=True, text=True, cwd=str(REPO)
 )
@@ -615,7 +613,6 @@ top_imp_rows = "\n".join(
 gate_md = f"""# Stage S06 Gate Report -- Case-Level Models
 
 - **Date:** {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}
-- **Owner:** M3
 - **Exp ID:** `{EXP_ID}`
 - **Dev Cases:** {len(full_df)} (idealized: {int(ideal_mask.sum())}, realistic: {int(real_mask.sum())})
 - **Frozen Test Groups:** {len(test_groups)} -- NOT OPENED

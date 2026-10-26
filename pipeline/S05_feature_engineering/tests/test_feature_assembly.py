@@ -3,7 +3,6 @@ test_feature_assembly.py – Unit tests for feature tensor assembly and leakage 
 """
 
 import numpy as np
-import pytest
 
 from pipeline.S05_feature_engineering.config import DEFAULT_CONFIG
 from pipeline.S05_feature_engineering.feature_assembly import (

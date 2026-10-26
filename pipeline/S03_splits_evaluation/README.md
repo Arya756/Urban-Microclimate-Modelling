@@ -4,7 +4,6 @@ Defines the frozen train/val/test split strategy and establishes the shared eval
 
 | | |
 | --- | --- |
-| **Owner** | M5 |
 | **Inputs** | `pipeline/S04_eda/S04g_combined_report/model_ready_cases.csv` |
 | **Outputs** | `data/splits.json` (hash committed), `results/runs.csv` (header), `src/mmnscfd/splits.py`, `src/mmnscfd/metrics.py`, `src/mmnscfd/evaluate.py` |
 | **Gate Requirement** | splits hash committed; leakage test (no group in two places) passes; dummy predictor scored through `evaluate.py` gives case-level R² ≈ 0 |
@@ -30,7 +29,7 @@ Defines the frozen train/val/test split strategy and establishes the shared eval
 Opened **only** in S9 (Phase 1) and S16 (Phase 2). Never used for tuning.
 
 - **Realistic (7 cities)**: AU-HOB, AU-SURREYHILLS, ES-BAR, FI-MS, US-CHI, US-NEW, VAL-US-CHI
-  - Stratified by density class; includes non-Western cities (ES, FI)
+  - Stratified by density class; spans Australia, Europe (ES, FI) and North America
 - **Idealized (17 families)**: All λp = 0.1111 families (interpolation), all λp = 0.5289 families (extrapolation), plus representative families at other λp values
 
 ### Development Set (136 groups, 482 cases)
@@ -42,7 +41,7 @@ Opened **only** in S9 (Phase 1) and S16 (Phase 2). Never used for tuning.
 
 All results are computed via:
 ```
-python -m mmnscfd.evaluate results/preds/<exp_id> --exp-id <id> --stage <Sxx> --owner <Mx>
+python -m mmnscfd.evaluate results/preds/<exp_id> --exp-id <id> --stage <Sxx>
 ```
 
 Metrics (open-ground cells only, case-weighted):
