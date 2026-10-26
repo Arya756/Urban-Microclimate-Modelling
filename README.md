@@ -7,7 +7,7 @@
 [![Data: UrbanTALES](https://img.shields.io/badge/data-UrbanTALES%20(CC%20BY--NC%204.0)-2a78d6)](https://urbantales.vercel.app)
 ![Phase 1](https://img.shields.io/badge/phase%201-machine%20learning-1baf7a)
 
-Surrogate models for pedestrian-level urban wind, trained on 538 large-eddy simulations of idealized building arrays and real neighbourhoods from 50 cities.
+Surrogate models for pedestrian-level urban wind, trained on 538 large-eddy simulations of idealized building arrays and real neighbourhoods in 22 countries.
 
 ## Overview
 
@@ -31,7 +31,7 @@ This work uses UrbanTALES (Nazarian et al., 2025), a public collection of 538 PA
 | Subset | Cases | Description |
 | --- | --- | --- |
 | Idealized | 224 | Aligned and staggered building arrays; eight plan-area densities; uniform and variable heights; two wind directions; 0.5 m grid |
-| Realistic | 314 | Neighbourhoods from 50 cities in 22 countries, derived from OpenStreetMap; uniform and real building heights; 1 m grid |
+| Realistic | 314 | Neighbourhoods in 22 countries (50 city groups), derived from OpenStreetMap; uniform and real building heights; 1 m grid (0.5 m for 5 cases) |
 
 Each case provides:
 - a building-height raster;
@@ -99,7 +99,7 @@ All numbers are out-of-fold scores on 482 development cases. Each fold holds out
 | Hybrid: pattern times case-level mean | 0.581 | **0.478 / 0.254** |
 
 - **Level versus pattern.** A tabular model recovers the level of each field, but only part of its pattern: corner jets, wakes and canyon vortices are smoothed, and peak winds are underpredicted.
-- **The limit is the features.** A random case split does not change this, and neither do eight times more training cells. Even on its own training cases the model explains only part of the pattern.
+- **The limit is the features.** A random case split does not change this, and neither do eight times more training cells. A far less regularised model fits its training cases better but scores no better on unseen ones.
 - **Why Phase 2.** This gap is the motivation for convolutional models that read the geometry directly.
 
 <p align="center"><img src="pipeline/S07_pixel_model/outputs/figures/error_maps_realistic.png" width="820" alt="Error maps on held-out realistic neighbourhoods"></p>
