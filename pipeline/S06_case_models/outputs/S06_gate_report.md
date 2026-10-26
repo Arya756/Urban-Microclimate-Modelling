@@ -1,15 +1,15 @@
-# Stage S06 Gate Report — Case-Level Models
+# Stage S06 Gate Report: Case-Level Models
 
 - **Date:** 2026-10-25 20:26 UTC  
 - **Stage:** S06  
 - **Dev Cases:** 482 (idealized: 190 · realistic: 292)  
-- **Frozen Test Groups:** 24 — NOT OPENED  
+- **Frozen Test Groups:** 24 (not opened)  
 - **Exp ID (gate):** `s06_lgbm_default_physics_v1`  
 - **Exp ID (best):** `s06_lgbm_tuned_physics_v1`
 
 ---
 
-## ✅ Stage Gate: PASSED
+## Stage Gate: PASSED
 
 Both R² thresholds exceed B1 and the fold-level Wilcoxon signed-rank test is significant.
 
@@ -22,7 +22,7 @@ Both R² thresholds exceed B1 and the fold-level Wilcoxon signed-rank test is si
 | Fold-level Wilcoxon signed-rank p | **0.0312** | < 0.05 | **PASS** |
 
 > **Note on Wilcoxon power:** With only 5 folds, the minimum achievable one-sided p-value is 0.03125.
-> The gate model (default LightGBM) achieves exactly this minimum — meaning it beats B1 in **all 5 folds**.
+> The gate model (default LightGBM) achieves exactly this minimum, meaning it beats B1 in **all 5 folds**.
 > The Optuna-tuned variant marginally under-performs in fold 0 due to Optuna's inner-CV resampling, giving p=0.0625.
 > Supplementary case-level Wilcoxon (N=482 cases) confirms significance at p=1.35×10⁻¹⁴.
 
@@ -32,7 +32,7 @@ Both R² thresholds exceed B1 and the fold-level Wilcoxon signed-rank test is si
 
 | Model | Mean R² | Fold R²s |
 |---|---|---|
-| B1 — RF + Basic (reference) | 0.7362 | [0.7380, 0.7967, 0.8668, 0.5883, 0.6910] |
+| B1: RF + Basic (reference) | 0.7362 | [0.7380, 0.7967, 0.8668, 0.5883, 0.6910] |
 | Ridge (L2) | 0.4807 | [0.6700, 0.3219, 0.6824, 0.7132, 0.0162] |
 | Ridge deg-2 polynomial | 0.0078 | [0.6737, 0.2961, 0.7731, 0.8111, −2.5151] |
 | k-NN (k=10) | 0.6531 | [0.6041, 0.4849, 0.6753, 0.7152, 0.7860] |
@@ -81,7 +81,7 @@ Both R² thresholds exceed B1 and the fold-level Wilcoxon signed-rank test is si
 
 | Feature Set | N Features | Mean R² | Std R² | Δ vs Basic |
 |---|---|---|---|---|
-| Basic | 9 | 0.7295 | 0.0947 | — |
+| Basic | 9 | 0.7295 | 0.0947 | - |
 | Morphology | 17 | 0.7520 | 0.0551 | +0.022 |
 | Physics (full S5) | 34 | 0.8217 | 0.0552 | **+0.092** |
 
@@ -96,7 +96,7 @@ Physics features (aerodynamic parameterizations + directional fetch) provide a c
 | U_std    | 0.8461 | 0.5188 |
 | TKE_mean | 0.9792 | 0.8536 |
 
-Idealized geometries (regular grids) are substantially better predicted than realistic (irregular urban) layouts — expected given the larger feature–target correlation structure in idealized cases.
+Idealized geometries (regular grids) are substantially better predicted than realistic (irregular urban) layouts: expected given the larger feature–target correlation structure in idealized cases.
 
 ---
 
@@ -134,9 +134,9 @@ Monotonic constraint has near-zero performance cost (+0.0002 R²) while improvin
 | std_h | 4198 | Building height variability |
 | lambda_f_dir | 4005 | Directional frontal area index |
 | z0_over_h_macdonald | 3700 | Roughness length (Macdonald) |
-| lateral_fetch_mean_m | 3627 | Lateral fetch — cross-wind exposure |
+| lateral_fetch_mean_m | 3627 | Lateral fetch: cross-wind exposure |
 | windward_wall_share | 3446 | Fraction of wall facing into wind |
-| downwind_fetch_mean_m | 2702 | Downwind fetch — wake length |
+| downwind_fetch_mean_m | 2702 | Downwind fetch: wake length |
 | max_h | 2566 | Maximum building height |
 | dist_mean_m | 2262 | Mean distance to nearest building |
 | mean_footprint_area_m2 | 2019 | Mean building footprint area |
@@ -176,4 +176,4 @@ Monotonic constraint has near-zero performance cost (+0.0002 R²) while improvin
 
 ---
 
-## Stage Gate Result: PASSED ✅
+## Stage Gate Result: PASSED

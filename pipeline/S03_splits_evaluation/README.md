@@ -7,7 +7,7 @@ Defines the frozen train/val/test split strategy and establishes the shared eval
 | **Inputs** | `pipeline/S04_eda/S04g_combined_report/model_ready_cases.csv` |
 | **Outputs** | `data/splits.json` (hash committed), `results/runs.csv` (header), `src/urbanwind/splits.py`, `src/urbanwind/metrics.py`, `src/urbanwind/evaluate.py` |
 | **Gate Requirement** | splits hash committed; leakage test (no group in two places) passes; dummy predictor scored through `evaluate.py` gives case-level R² ≈ 0 |
-| **Gate Status** | ✅ PASSED |
+| **Gate Status** | PASSED |
 
 ---
 
@@ -15,7 +15,7 @@ Defines the frozen train/val/test split strategy and establishes the shared eval
 
 | File | Description |
 | --- | --- |
-| `S03_Splits_and_Evaluation.ipynb` | Stage notebook — loads case table, builds GroupKFold splits, writes `splits.json`, runs all gate tests |
+| `S03_Splits_and_Evaluation.ipynb` | Stage notebook: loads case table, builds GroupKFold splits, writes `splits.json`, runs all gate tests |
 | `README.md` | This file |
 | `S03_gate_report.md` | Formal gate evidence |
 
@@ -65,7 +65,7 @@ Metrics (open-ground cells only, case-weighted):
 
 ```
 splits.json SHA-256: 3a28b842d4f9d1249a483049c99d5abbb9268f1e6262f77fc3018ad4526ba7a7
-Leakage test: PASS — 24 test groups, 136 dev groups, 0 overlap
+Leakage test: PASS: 24 test groups, 136 dev groups, 0 overlap
 Dummy predictor (per-case mean): pooled_r2 = 0.0000 (validates metric plumbing; see baseline note above)
-evaluate.py smoke test: PASS — 1 row appended to results/runs.csv
+evaluate.py smoke test: PASS: 1 row appended to results/runs.csv
 ```

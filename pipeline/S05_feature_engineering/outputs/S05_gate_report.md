@@ -1,4 +1,4 @@
-# Stage S05 Gate Report — Urban Microclimate Feature Engineering
+# Stage S05 Gate Report: Urban Microclimate Feature Engineering
 
 - **Date:** 2026-10-26 17:36:11 UTC
 - **Total Cases Processed:** 535

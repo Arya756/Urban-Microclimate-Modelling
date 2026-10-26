@@ -481,7 +481,7 @@ def generate_gate_report(
     n_inf = int(np.isinf(df_features[numeric_cols].values).sum()) if n_cases > 0 else 0
     n_bad = n_nan + n_inf
 
-    report_content = f"""# Stage S05 Gate Report — Urban Microclimate Feature Engineering
+    report_content = f"""# Stage S05 Gate Report: Urban Microclimate Feature Engineering
 
 - **Date:** {datetime.datetime.now(datetime.UTC).strftime('%Y-%m-%d %H:%M:%S UTC')}
 - **Total Cases Processed:** {n_cases}

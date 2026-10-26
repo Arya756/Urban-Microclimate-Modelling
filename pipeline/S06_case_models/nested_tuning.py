@@ -300,7 +300,7 @@ def run_nested_cv(
         json.dump(best_params_by_fold, f, indent=2)
 
     # 5. Report Markdown
-    report_content = f"""# Stage S06 — Leakage-Safe Nested Cross-Validation Report
+    report_content = f"""# Stage S06: Leakage-Safe Nested Cross-Validation Report
 
 ## Executive Summary
 This report presents generalization estimates for LightGBM trained on 34 physics features, evaluated using a **nested cross-validation protocol** to eliminate hyperparameter selection bias.

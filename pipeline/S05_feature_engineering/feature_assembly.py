@@ -285,7 +285,7 @@ def load_normalized_target(
     Tuple[np.ndarray, np.ndarray, np.ndarray]
         - Y: Normalized pedestrian wind speed (Ny, Nx).  Zero at invalid cells.
         - tke_norm: Normalized turbulence kinetic energy (Ny, Nx).  Zero at invalid cells.
-        - valid_mask: Boolean mask — True only for open-ground cells with finite,
+        - valid_mask: Boolean mask: True only for open-ground cells with finite,
           non-NaN wind values.
     """
     if u_tau <= 0.0:

@@ -1,4 +1,4 @@
-# Stage S02 Gate Report — UrbanTALES Profile Preprocessing
+# Stage S02 Gate Report: UrbanTALES Profile Preprocessing
 
 - **Total Catalog Cases:** 538
 - **Total Cleaned Cases:** 538 (Idealized: 224, Realistic: 314)
