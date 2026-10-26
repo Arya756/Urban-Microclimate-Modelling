@@ -131,7 +131,7 @@ def test_nested_tuning_smoke_run(dev_data):
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_path = pathlib.Path(tmp_dir)
         # Run with 1 trial to test pipeline execution
-        results = run_nested_cv(
+        run_nested_cv(
             full_df,
             n_trials=1,
             random_seed=42,

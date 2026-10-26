@@ -77,7 +77,7 @@ N_FOLDS     = int(splits["n_folds"])
 
 feat_df = pd.read_csv(FEATURES_PATH)
 tgt_df  = pd.read_csv(TARGET_TABLE)
-tgt_df  = tgt_df[tgt_df["is_model_ready_spatial"] == True].copy()
+tgt_df  = tgt_df[tgt_df["is_model_ready_spatial"].eq(True)].copy()
 
 feat_df["fold"]    = feat_df["split_group"].map({k: int(v) for k, v in fold_map.items()})
 feat_df["is_test"] = feat_df["split_group"].isin(test_groups)

@@ -211,7 +211,6 @@ def generate_plots(output_dir: pathlib.Path) -> None:
     plots_dir.mkdir(parents=True, exist_ok=True)
 
     comp_df = pd.read_csv(output_dir / "comparison.csv")
-    paired_df = pd.read_csv(output_dir / "paired_fold_comparisons.csv")
     stability_df = pd.read_csv(output_dir / "feature_selection_stability.csv")
     pca_var_df = pd.read_csv(output_dir / "pca_explained_variance.csv")
     subset_df = pd.read_csv(output_dir / "subset_metrics.csv")
@@ -313,7 +312,6 @@ def generate_plots(output_dir: pathlib.Path) -> None:
     if not stability_df.empty:
         # Group by feature and see selection count across key methods
         fig, ax = plt.subplots(figsize=(11, 8))
-        methods_in_stab = stability_df["method"].unique()
         pivot_stab = stability_df.pivot(index="feature", columns="method", values="selection_count").fillna(0)
         # Sort by total selections
         pivot_stab["total"] = pivot_stab.sum(axis=1)

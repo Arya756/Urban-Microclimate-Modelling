@@ -71,7 +71,7 @@ def load_development_data(
 
     feat_df = pd.read_csv(features_path)
     tgt_df = pd.read_csv(targets_path)
-    tgt_ready = tgt_df[tgt_df["is_model_ready_spatial"] == True].copy()
+    tgt_ready = tgt_df[tgt_df["is_model_ready_spatial"].eq(True)].copy()
 
     rename_targets = {
         "u_ped_mean": "U_mean",

@@ -54,18 +54,14 @@ PHYSICS_FEATURES = MORPH_FEATURES + [
     "relative_wind_facet_angle_deg",
 ]
 
-RENAME_TARGETS = {
-    "u_ped_mean": "U_mean",
-    "u_p95":      "U_p95",
-    "u_ped_std":  "U_std",
-    "tke_mean":   "TKE_mean",
-}
+TARGETS = ["U_mean", "U_p95", "U_std", "TKE_mean"]
 
 
 def load_dataset(repo_path: pathlib.Path | str | None = None) -> Tuple[pd.DataFrame, List[str]]:
     """
-    Loads and merges S05 features with S04 targets, enforces split assignments,
-    and excludes frozen test groups.
+    Loads and merges S05 features with the S02 case targets (U/u_tau over open
+    ground, see urbanwind.data), enforces split assignments, and excludes frozen
+    test groups.
 
     Returns:
         full_df: DataFrame with 482 dev cases, split_group, fold, targets, and features.
@@ -77,7 +73,7 @@ def load_dataset(repo_path: pathlib.Path | str | None = None) -> Tuple[pd.DataFr
         repo_path = pathlib.Path(repo_path)
 
     features_path = repo_path / "pipeline" / "S05_feature_engineering" / "outputs" / "case_features.csv"
-    target_table = repo_path / "pipeline" / "S04_eda" / "S04g_combined_report" / "master_case_table.csv"
+    target_table = repo_path / "pipeline" / "S02_preprocessing" / "outputs" / "case_targets.csv"
     splits_path = repo_path / "data" / "splits.json"
 
     with open(splits_path, "r", encoding="utf-8") as f:
@@ -88,7 +84,7 @@ def load_dataset(repo_path: pathlib.Path | str | None = None) -> Tuple[pd.DataFr
 
     feat_df = pd.read_csv(features_path)
     tgt_df = pd.read_csv(target_table)
-    tgt_df = tgt_df[tgt_df["is_model_ready_spatial"] == True].copy()
+    tgt_df = tgt_df[tgt_df["status"] != "exclude"].copy()
 
     feat_df["fold"] = feat_df["split_group"].map({k: int(v) for k, v in fold_map.items()})
     feat_df["is_test"] = feat_df["split_group"].isin(test_groups)
@@ -97,7 +93,7 @@ def load_dataset(repo_path: pathlib.Path | str | None = None) -> Tuple[pd.DataFr
     dev_df = feat_df[~feat_df["is_test"]].copy()
 
     full_df = dev_df.merge(
-        tgt_df[["case"] + list(RENAME_TARGETS.keys())].rename(columns=RENAME_TARGETS),
+        tgt_df[["case"] + TARGETS],
         on="case",
         how="inner",
     )
@@ -339,7 +335,7 @@ def compute_stability(
     """
     n_folds = len(selected_features_per_fold)
     counts = {feat: 0 for feat in all_features}
-    for fold_idx, feats in selected_features_per_fold.items():
+    for feats in selected_features_per_fold.values():
         for feat in feats:
             counts[feat] = counts.get(feat, 0) + 1
 

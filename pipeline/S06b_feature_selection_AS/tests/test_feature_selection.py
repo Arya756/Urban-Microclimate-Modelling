@@ -135,7 +135,7 @@ def test_baseline_reproduction_exact_match():
     The updated reference is stable and reproducible from the corrected feature table.
 
     Pre-fix reference  (case_features.csv 2026-10-25): mean_r2 = 0.8217, std_r2 = 0.0552
-    Corrected reference (case_features.csv 2026-10-26): mean_r2 = 0.8246, std_r2 = 0.0548
+    Corrected reference (2026-10-27): mean_r2 = 0.8170, std_r2 = 0.0627
     """
     full_df, physics_features = load_dataset(REPO_ROOT)
     folds = full_df["fold"].values.astype(int)
@@ -155,10 +155,10 @@ def test_baseline_reproduction_exact_match():
     mean_r2 = float(np.mean(fold_r2s))
     std_r2 = float(np.std(fold_r2s, ddof=0))
 
-    # Reference from case_features.csv regenerated 2026-10-26 (orientation, mask and Kanda corrections).
+    # Reference: corrected targets (U/u_tau, raster mask) and features (orientation, mask, Kanda), 2026-10-27.
     # LightGBM results shift slightly between library versions, hence the 1e-3 tolerance.
-    assert abs(mean_r2 - 0.8246143671359014) < 1e-3, f"Baseline mean R2 mismatch: {mean_r2} vs 0.8246"
-    assert abs(std_r2 - 0.0548452501692263) < 1e-3, f"Baseline std R2 mismatch: {std_r2} vs 0.0548"
+    assert abs(mean_r2 - 0.816954) < 1e-3, f"Baseline mean R2 mismatch: {mean_r2} vs 0.8170"
+    assert abs(std_r2 - 0.062683) < 1e-3, f"Baseline std R2 mismatch: {std_r2} vs 0.0627"
 
 
 def test_subset_drops_constant_feature():

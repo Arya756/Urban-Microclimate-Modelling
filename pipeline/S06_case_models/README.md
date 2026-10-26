@@ -1,165 +1,131 @@
-# Stage S06 — Case-Level Regression Surrogate Models
+# S06 Case-level models
 
-**Stage:** S06 (Phase 1 — AML)
-**Status:** ✅ Gate Passed
-**Date:** 2026-10-25
+Predicts four summary statistics of the pedestrian-level wind field of each case from the S05 morphology features:
+- U_mean, U_p95 and U_std: the mean, 95th percentile and standard deviation of U/u* over open ground;
+- TKE_mean: the mean of TKE/u*² over open ground.
 
----
+| Part | Files | Status |
+| --- | --- | --- |
+| S06a | `run_s06.py`, `nested_tuning.py`, `S06a_case_models.ipynb`, files directly under `outputs/` | First model ladder and LightGBM gate model; superseded by S06c (see below) |
+| S06b | `../S06b_feature_selection_AS/` | Feature selection and PCA experiments |
+| S06c | `s06c_model_comparison.py`, `S06c_case_model_comparison.ipynb`, `outputs/s06c/` | Corrected rerun and comparison of eight regressors; current results |
 
-## Overview
+## S06c protocol
 
-Stage S06 trains and evaluates a hierarchy of case-level regression surrogates that predict scalar microclimate metrics from 79 building geometry and aerodynamic physics features produced by Stage S05.
+- **Data.**
+  - 482 development cases: 190 idealized and 292 realistic, in 136 groups.
+  - Targets come from `pipeline/S02_preprocessing/outputs/case_targets.csv` and are normalised by each case's own u*. Open ground is taken from the building map.
+  - The 34 S05 case features include the published Kanda (2013) parameterisation.
+  - The frozen test groups are never loaded.
+- **Outer loop.** The five fixed folds of `data/splits.json`. Each fold holds out whole cities and whole idealized layout families.
+- **Inner loop.** 5-fold GroupKFold on the outer-training cases only, used for hyperparameter search with Optuna (TPE, 30 trials per model, fold and target).
+  - XGBoost and LightGBM share one search space: tree count, learning rate, depth, minimum leaf size from 1 to 40, row and column subsampling, L2 penalty.
+  - The Gaussian process (Matérn 5/2 with one length scale per feature) is fitted by marginal likelihood instead.
+- **Scores.** R², MAE and RMSE on the pooled out-of-fold predictions, overall and per subset, plus the spread of R² across the five folds.
+- **Model comparison.** Differences between models come from a group bootstrap: whole cities and layout families are resampled 2,000 times.
 
-### What This Stage Does
+## S06c results
 
-| Step | Description |
-|---|---|
-| B1 reproduction | Random Forest on basic morphology features — validates the CV harness against the reference baseline (R² ≈ 0.671) |
-| Model ladder | Ridge, Poly-Ridge (deg-2), k-NN, Random Forest, LightGBM — all evaluated on physics features with identical grouped 5-fold CV |
-| Feature ablation | LightGBM on Basic / Morphology / Physics feature sets — quantifies benefit of aerodynamic parameterizations |
-| Multi-target | LightGBM trained separately on U_mean, U_p95, U_std, TKE_mean |
-| Hyperparameter tuning | Optuna Bayesian optimization (60 trials, inner 3-fold GroupKFold) |
-| Monotonic constraints | λ_p → U_mean constrained negative — validates physical monotonicity |
-| Transfer tests | Cross-subset inference (idealized→realistic and vice versa) |
-| Statistical significance | Fold-level Wilcoxon signed-rank test (N=5) + case-level Wilcoxon (N=482) |
-| Contract predictions | OOF predictions saved to `results/preds/` in `evaluate.py` contract format |
-| Scoring | `urbanwind.evaluate` scores and appends to `results/runs.csv` |
-| Gate report | Full markdown report with all numbers, tables and outputs |
+### U_mean (out-of-fold, tuned)
 
----
+| Model | R² | R² idealized | R² realistic | MAE (U/u*) | Fold R² |
+| --- | --- | --- | --- | --- | --- |
+| XGBoost | **0.836** | 0.970 | **0.700** | 0.161 | 0.836 ± 0.053 |
+| LightGBM | 0.828 | 0.967 | 0.686 | 0.164 | 0.828 ± 0.076 |
+| Gaussian process | 0.819 | **0.982** | 0.656 | **0.159** | 0.820 ± 0.100 |
+| Random forest | 0.817 | 0.966 | 0.666 | 0.173 | 0.817 ± 0.052 |
+| kNN | 0.690 | 0.935 | 0.439 | 0.212 | 0.700 ± 0.085 |
+| SVR (RBF) | 0.617 | 0.958 | 0.275 | 0.180 | 0.552 ± 0.411 |
+| Ridge | 0.383 | 0.885 | -0.128 | 0.314 | 0.367 ± 0.249 |
+| Training mean | -0.004 | -0.107 | -0.061 | 0.467 | |
+| B1: random forest, 9 basic features, untuned | 0.735 | 0.890 | 0.565 | 0.233 | 0.730 ± 0.100 |
 
-## Gate Criteria
+### All targets (R², tuned, full feature set)
 
-| Criterion | Threshold | Achieved | Status |
-|---|---|---|---|
-| U_mean grouped CV R² | > 0.671 (B1) | **0.8277** | ✅ PASS |
-| U_p95  grouped CV R² | > 0.664 (B1) | **0.7504** | ✅ PASS |
-| Fold-level Wilcoxon p | < 0.05 | **0.0312** | ✅ PASS |
+| Model | U_mean | U_p95 | U_std | TKE_mean |
+| --- | --- | --- | --- | --- |
+| XGBoost | 0.836 | 0.754 | 0.724 | 0.916 |
+| LightGBM | 0.828 | 0.751 | 0.696 | 0.921 |
+| Random forest | 0.817 | 0.749 | 0.721 | 0.911 |
+| Gaussian process | 0.819 | 0.666 | 0.683 | 0.934 |
+| B1 | 0.735 | 0.670 | 0.595 | 0.865 |
 
-Gate model: `LightGBM + 34 Physics Features` (default hyperparameters)
-Exp ID: `s06_lgbm_default_physics_v1`
+### Findings
 
----
+1. **Tree ensembles lead, and they are tied.**
+   - XGBoost, LightGBM and the random forest beat B1 on U_mean by 0.08 to 0.10 R². The 95% bootstrap intervals of each difference exclude zero.
+   - The differences among the three are within resampling noise: XGBoost minus LightGBM is 0.008 [-0.019, 0.032], and XGBoost minus the random forest is 0.019 [-0.019, 0.057].
+   - On U_p95 all three beat B1 by about 0.08 (intervals exclude zero).
+2. **Tuning adds little.** With fixed default settings the random forest scores 0.815, LightGBM 0.827 and XGBoost 0.811 on U_mean; only XGBoost gains noticeably from tuning.
+   - An earlier run, with 3 inner folds and a narrower leaf-size range for LightGBM than for XGBoost, made LightGBM look 0.06 worse. Matching the search spaces removed the gap, so the comparison is sensitive to how each model is tuned.
+   - Kernel and linear models are the least stable. SVR scores 0.62 to 0.84 on four folds but -0.26 on the fifth, because the hyperparameters chosen on the training folds did not carry over to the held-out cities.
+3. **Real cities are the hard part.**
+   - Idealized arrays are predicted almost perfectly (R² 0.97).
+   - Realistic neighbourhoods reach 0.70 for U_mean and 0.55 for U_p95.
+   - Peak winds depend on local street geometry that case-level summaries do not describe; this is the gap S07 measures.
+4. **Physics features help most on real cities.**
+   - Adding fetch, distance-to-wall, displacement-height and roughness features raises U_mean R² from 0.71–0.77 (basic or morphology features) to 0.82–0.84.
+   - On realistic cases R² rises from 0.52–0.61 to 0.67–0.70.
+   - The 8 extra morphology features add between 0 and 0.05 over the 9 basic ones.
+5. **What drives mean wind.** TreeSHAP on the held-out folds (`outputs/s06c/figures/shap_u_mean.png`) ranks these features highest:
+   - frontal area density λf (more frontal area, less wind);
+   - mean and 90th-percentile distance to the nearest wall (more open space, more wind);
+   - mean upwind fetch;
+   - built volume per unit area;
+   - lateral fetch;
+   - the Kanda roughness length.
+6. **Random splits flatter models.** Scored on realistic cases, random 5-fold CV overstates R² by 0.03 for the random forest, 0.04 for LightGBM and 0.45 for ridge, compared with folds that hold out whole cities (`leakage_random_vs_grouped.png`).
+7. **No transfer between subsets.** A model trained only on idealized arrays reaches R² 0.09 on real cities; trained only on real cities, it reaches -0.47 on idealized arrays. Both subsets must be in the training data.
+8. **Flagged cases do not drive the results.** Leaving out the six flagged cases changes R² by less than 0.01 (`r2_without_flagged` in `model_comparison.csv`).
 
-## Key Results
+## Why S06a is superseded
 
-### Model Ladder (U_mean, Physics Features)
+S06a (first run) predicted the same statistics in m/s:
+- they were taken from the S04 master table, with open ground defined by NaN in the wind files;
+- for 52 cases that biased the mean wind by more than 1% (up to 11.7%);
+- its Kanda (2013) features used a form that is not the published one;
+- its first runs tuned hyperparameters on the outer validation folds.
 
-| Model | Mean R² |
-|---|---|
-| B1 — RF + Basic | 0.736 |
-| Ridge | 0.481 |
-| Ridge (deg-2 poly) | 0.008 |
-| k-NN | 0.653 |
-| Random Forest | 0.819 |
-| **LightGBM (gate)** | **0.828** |
-| LightGBM (Optuna-tuned) | **0.833** |
+`nested_tuning.py` (added later) fixed the tuning protocol. Its numbers, and the S06a gate report (LightGBM U_mean R² 0.828), describe that first setup and are kept for reference.
 
-### Feature-Set Ablation (LightGBM, U_mean)
+## Case readiness and exclusions
 
-| Feature Set | Features | Mean R² | Δ vs Basic |
-|---|---|---|---|
-| Basic | 9 | 0.730 | — |
-| Morphology | 17 | 0.752 | +0.022 |
-| Physics | 34 | 0.822 | **+0.092** |
+- **Excluded (3 cases):** CN-BE-V2_d00, CN-CD-V1_d00 and CN-SH-V1_d00. Their downloadable building maps do not match the simulated domain.
+- **Kept and flagged (6 cases):**
+  - JP-Tok-V4_d00 stopped at 4.9 h. Its time series is stationary (final TKE coefficient of variation 2%), but its fields average 0.9 h instead of 8 h.
+  - UG-UG-U1/U2/U3 and AU-Mel-U9_d00: after the vertical flip, the building map and wind field agree on 90% to 97% of cells; the rest are building-edge interpolation artefacts.
+  - NP-NP-U1_d00 stores values inside 3,120 building cells, which the building-map mask removes.
+- All rules live in `urbanwind.data` (`EXCLUDE`, `FLAG`, `load_case`).
 
-### Multi-Target Summary (LightGBM, Physics)
+## Files
 
-| Target | Mean R² | B2 Target |
-|---|---|---|
-| U_mean | 0.828 | 0.867 |
-| U_p95 | 0.750 | 0.791 |
-| U_std | 0.740 | 0.769 |
-| TKE_mean | **0.925** | 0.941 |
-
-### Top Feature Importances (U_mean)
-
-1. `z0_over_h_kanda` — aerodynamic roughness (Kanda)
-2. `upwind_fetch_mean_m` — upstream unobstructed distance
-3. `d_over_h_kanda` — displacement height (Kanda)
-
----
-
-## Directory Structure
-
-```
+```text
 pipeline/S06_case_models/
-├── run_s06.py                        # Reproducible pipeline script (all 14 steps)
-├── S06a_case_models.ipynb            # Jupyter notebook (interactive version)
+├── s06c_model_comparison.py           # S06c experiment (about 20 minutes on 10 cores)
+├── S06c_case_model_comparison.ipynb   # S06c results with commentary
+├── run_s06.py, nested_tuning.py       # S06a scripts
+├── S06a_case_models.ipynb             # S06a notebook
 └── outputs/
-    ├── S06_gate_report.md            # Full gate report (all numbers, all tables)
-    ├── ablation_table.csv            # Feature-set ablation results
-    ├── fold_r2_summary.csv           # Per-fold R² for all 4 targets × 5 folds
-    └── figures/
-        ├── model_ladder.png          # Model comparison bar chart
-        ├── ablation_features.png     # Feature-set ablation chart
-        ├── true_vs_pred_umean.png    # OOF parity scatter (idealized + realistic)
-        ├── feature_importance.png    # Top-15 feature importance bars
-        └── multitarget_fold_r2.png   # Multi-target fold-level grouped bars
+    ├── s06c/
+    │   ├── model_comparison.csv       # every model, feature set and target; overall, per subset, per fold
+    │   ├── oof_predictions.csv        # out-of-fold predictions behind every row above
+    │   ├── best_params.json           # tuned hyperparameters per model, target and outer fold
+    │   ├── bootstrap_r2_differences.csv
+    │   ├── leakage_random_vs_grouped.csv
+    │   ├── transfer.csv
+    │   ├── shap_importance_u_mean.csv
+    │   └── figures/                   # model ladder, all targets, ablation, leakage, parity, SHAP
+    └── (S06a reports, tables and figures)
 
-results/preds/
-├── s06_lgbm_default_physics_v1/     # Gate model OOF predictions
-│   └── case_preds.csv               # 964 rows: U_mean + U_p95, 482 cases each
-└── s06_lgbm_tuned_physics_v1/       # Best model OOF predictions
-    └── case_preds.csv               # 1928 rows: 4 targets × 482 cases
-
-results/runs.csv                     # Official metric log (S06 rows appended)
+results/preds/s06c_<model>/case_preds.csv   # contract-format predictions, scored into results/runs.csv
 ```
 
----
-
-## How to Reproduce
+## Reproduce
 
 ```bash
-# From repo root
-python3 pipeline/S06_case_models/run_s06.py
+uv sync
+uv run python pipeline/S06_case_models/s06c_model_comparison.py
+for m in mean ridge knn svr gaussian_process random_forest xgboost lightgbm; do
+  uv run python -m urbanwind.evaluate results/preds/s06c_$m --stage S06c
+done
 ```
-
-The script is self-contained. It reads from:
-- `pipeline/S05_feature_engineering/outputs/case_features.csv`
-- `pipeline/S04_eda/S04g_combined_report/master_case_table.csv`
-- `data/splits.json`
-
-It writes to:
-- `pipeline/S06_case_models/outputs/` (reports, CSVs, figures)
-- `results/preds/` (contract-format predictions)
-- `results/runs.csv` (metric log via `urbanwind.evaluate`)
-
----
-
-## Dependencies
-
-```bash
-pip install lightgbm optuna mapie shap matplotlib
-```
-
-All other dependencies (`numpy`, `pandas`, `scikit-learn`, `scipy`) are already in the project environment.
-
----
-
-## Key Findings & Notes for S7
-
-1. **Physics features are essential** — the +9.2 R² point lift from physics over basic morphology is the single largest performance driver at case level.
-2. **Realistic subsets are harder** — U_mean OOF R² is 0.96 (idealized) vs 0.69 (realistic), suggesting realistic urban forms need more expressive or spatial models (→ S7 pixel-level).
-3. **Transfer learning fails completely** — trained on idealized, tested on realistic gives R²=0.12. The two subsets must always be trained together.
-4. **Monotonic constraints are free** — enforcing λ_p↑ → U↓ changes R² by +0.0002. Always enable for physical interpretability.
-5. **TKE_mean is much easier** — R²=0.925, well within reach of B2 (0.941). The aerodynamic roughness features strongly predict canopy turbulence.
-
----
-
-## Case Readiness, Topography Alignment, and Exclusions
-
-### Overview & Root-Cause Resolution
-During dataset auditing, concerns were raised regarding six simulation cases:
-- **`JP-Tok-V4_d00` (Simulation Duration):** The simulation ran for 4.91 hours (17,689 s, 8,834 timesteps) before stopping (due to an HPC walltime cutoff relative to the 12-hour nominal setup). Verification of the turbulence time series demonstrates that the flow field achieved turbulent stationarity well before termination (final TKE CV = 1.99%, well below the 10% threshold; duration exceeds the 2.0 h spin-up limit by 2.45x). Complete 34 physics features exist in S05, valid ground targets load without error, and out-of-fold prediction is physically sound (residual: -0.024 m/s).
-- **`UG-UG-U1_d00`, `UG-UG-U2_d00`, `UG-UG-U3_d00` & `AU-Mel-U9_d00` (Topography Mismatches):** Topography and pedestrian target grid dimensions match identically. Before the `np.flipud(H)` correction, top-row-first file storage inverted the y-axis relative to NetCDF arrays, causing apparent mask divergence (~50%). With vertical orientation corrected, mask agreement reaches 90.2%–96.6%. The remaining differences are sub-grid CFD boundary interpolation artefacts at building perimeters.
-- **`NP-NP-U1_d00` ("Buildings Hold Wind Values"):** NetCDF stored numerical zeros or face-staggered velocities within 3,120 building footprint cells. Enforcing `topo_H == 0.0` as the authoritative ground mask unconditionally zeroes and masks all 81,724 building cells, yielding 116,543 valid pedestrian cells.
-
-### Auditable Exclusions
-Only three cases across all 538 dataset cases remain excluded from model training:
-- `CN-BE-V2_d00`, `CN-CD-V1_d00`, `CN-SH-V1_d00` (`qc_topo_valid = False` due to an upstream bounding-box metadata mismatch where domain size != coordinate span).
-
-### Dataset and Split Integrity
-- **All six investigated cases are retained** as `is_model_ready_spatial = True`.
-- **482 development cases** across 136 spatial groups and 5 outer folds remain completely unchanged.
-- **53 frozen test cases** across 24 test groups remain strictly isolated and untouched.
