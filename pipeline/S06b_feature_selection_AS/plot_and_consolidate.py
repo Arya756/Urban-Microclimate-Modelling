@@ -59,9 +59,22 @@ plt.rcParams.update({
 
 
 def consolidate_results(output_dir: pathlib.Path) -> None:
-    """Merges feature selection and PCA results into unified comparison tables."""
-    fs_fold = pd.read_csv(output_dir / "fold_metrics.csv")
-    pca_fold = pd.read_csv(output_dir / "pca_fold_metrics.csv")
+    """
+    Merges feature selection and PCA results into unified comparison tables safely and idempotently.
+    Can be run multiple times without duplicating PCA rows.
+    """
+    # 1. Load feature selection fold metrics (prefer raw source fs_fold_metrics.csv)
+    fs_file = output_dir / "fs_fold_metrics.csv"
+    if fs_file.exists():
+        fs_fold = pd.read_csv(fs_file)
+    else:
+        fs_fold = pd.read_csv(output_dir / "fold_metrics.csv")
+        fs_fold = fs_fold[~fs_fold["method"].astype(str).str.startswith("PCA_")].copy()
+
+    pca_file = output_dir / "pca_fold_metrics.csv"
+    if not pca_file.exists():
+        raise FileNotFoundError(f"Missing PCA fold metrics at {pca_file}")
+    pca_fold = pd.read_csv(pca_file)
 
     # Rename n_components to n_features for PCA to align schema
     pca_fold_aligned = pca_fold.rename(columns={
@@ -69,20 +82,41 @@ def consolidate_results(output_dir: pathlib.Path) -> None:
         "pca_time_sec": "selection_time_sec",
     })
 
-    # Combine fold metrics
+    # Combine fold metrics safely
     combined_fold_metrics = pd.concat([fs_fold, pca_fold_aligned], ignore_index=True)
+    dups = combined_fold_metrics.duplicated(subset=["method", "fold"])
+    if dups.any():
+        dup_entries = combined_fold_metrics[dups][["method", "fold"]].to_dict(orient="records")
+        raise ValueError(f"Found {dups.sum()} duplicate (method, fold) records in combined fold metrics: {dup_entries}")
+
     combined_fold_metrics.to_csv(output_dir / "fold_metrics.csv", index=False)
 
-    # Combine OOF predictions
-    fs_oof = pd.read_csv(output_dir / "oof_predictions.csv")
-    pca_oof = pd.read_csv(output_dir / "pca_oof_predictions.csv")
+    # 2. Combine OOF predictions safely (prefer raw source fs_oof_predictions.csv)
+    fs_oof_file = output_dir / "fs_oof_predictions.csv"
+    if fs_oof_file.exists():
+        fs_oof = pd.read_csv(fs_oof_file)
+    else:
+        fs_oof = pd.read_csv(output_dir / "oof_predictions.csv")
+        fs_oof = fs_oof[~fs_oof["method"].astype(str).str.startswith("PCA_")].copy()
+
+    pca_oof_file = output_dir / "pca_oof_predictions.csv"
+    if not pca_oof_file.exists():
+        raise FileNotFoundError(f"Missing PCA OOF predictions at {pca_oof_file}")
+    pca_oof = pd.read_csv(pca_oof_file)
+
     combined_oof = pd.concat([fs_oof, pca_oof], ignore_index=True)
+    oof_dups = combined_oof.duplicated(subset=["case", "target", "method", "fold"])
+    if oof_dups.any():
+        raise ValueError(f"Found {oof_dups.sum()} duplicate OOF predictions in combined table!")
+
     combined_oof.to_csv(output_dir / "oof_predictions.csv", index=False)
 
-    # Recompute unified comparison table
+    # 3. Recompute unified comparison table
     methods = combined_fold_metrics["method"].unique()
     comp_rows = []
-    baseline_fold_r2 = combined_fold_metrics[combined_fold_metrics["method"] == "Baseline (34 features)"]["r2"].values
+    baseline_df = combined_fold_metrics[combined_fold_metrics["method"] == "Baseline (34 features)"]
+    if baseline_df.empty:
+        raise ValueError("Missing 'Baseline (34 features)' in fold metrics!")
 
     for m in methods:
         m_df = combined_fold_metrics[combined_fold_metrics["method"] == m]
@@ -121,9 +155,9 @@ def consolidate_results(output_dir: pathlib.Path) -> None:
     comp_df = pd.DataFrame(comp_rows)
     comp_df.to_csv(output_dir / "comparison.csv", index=False)
 
-    # Recompute unified paired fold comparisons
+    # 4. Recompute unified paired fold comparisons
     paired_rows = []
-    b_df = combined_fold_metrics[combined_fold_metrics["method"] == "Baseline (34 features)"].sort_values("fold")
+    b_df = baseline_df.sort_values("fold")
     n_folds = len(b_df)
 
     for m in methods:
@@ -151,14 +185,25 @@ def consolidate_results(output_dir: pathlib.Path) -> None:
     paired_df = pd.DataFrame(paired_rows)
     paired_df.to_csv(output_dir / "paired_fold_comparisons.csv", index=False)
 
-    # Combine subset metrics
-    fs_sub = pd.read_csv(output_dir / "subset_metrics.csv")
-    pca_sub = pd.read_csv(output_dir / "pca_subset_metrics.csv")
-    pca_sub_aligned = pca_sub.rename(columns={"mean_n_components": "mean_n_features"})
-    combined_sub = pd.concat([fs_sub, pca_sub_aligned], ignore_index=True)
-    combined_sub.to_csv(output_dir / "subset_metrics.csv", index=False)
+    # 5. Combine subset metrics safely
+    fs_sub_file = output_dir / "fs_subset_metrics.csv"
+    if fs_sub_file.exists():
+        fs_sub = pd.read_csv(fs_sub_file)
+    else:
+        fs_sub = pd.read_csv(output_dir / "subset_metrics.csv")
+        fs_sub = fs_sub[~fs_sub["method"].astype(str).str.startswith("PCA_")].copy()
 
-    print("Unified CSVs successfully consolidated in", output_dir)
+    pca_sub_file = output_dir / "pca_subset_metrics.csv"
+    if pca_sub_file.exists():
+        pca_sub = pd.read_csv(pca_sub_file)
+        pca_sub_aligned = pca_sub.rename(columns={"mean_n_components": "mean_n_features"})
+        combined_sub = pd.concat([fs_sub, pca_sub_aligned], ignore_index=True)
+        sub_dups = combined_sub.duplicated(subset=["subset", "method"])
+        if sub_dups.any():
+            raise ValueError(f"Found duplicate subset records: {combined_sub[sub_dups]}")
+        combined_sub.to_csv(output_dir / "subset_metrics.csv", index=False)
+
+    print("Unified CSVs successfully consolidated idempotently in", output_dir)
 
 
 def generate_plots(output_dir: pathlib.Path) -> None:

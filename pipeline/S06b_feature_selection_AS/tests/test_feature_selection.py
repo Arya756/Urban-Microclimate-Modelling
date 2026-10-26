@@ -104,9 +104,9 @@ def test_correlation_filter_train_only():
     assert len(retained_fold0) >= 20, "Should retain at least 20 informative features"
 
     # Verify no feature pair in retained has correlation > 0.95 on training data
-    corr_tr = X_df.iloc[tr_mask][retained_fold0].corr().abs()
-    np.fill_diagonal(corr_tr.values, 0)
-    max_corr = corr_tr.max().max()
+    corr_vals = X_df.iloc[tr_mask][retained_fold0].corr().abs().to_numpy(copy=True)
+    np.fill_diagonal(corr_vals, 0.0)
+    max_corr = float(np.nanmax(corr_vals))
     assert max_corr <= 0.9500000001, f"Found pair with correlation {max_corr} > 0.95 in retained features!"
 
 
@@ -175,3 +175,37 @@ def test_subset_drops_constant_feature():
     real_df = full_df[full_df["subset"] == "realistic"]
     assert real_df["subset_idealized"].nunique() == 1
     assert real_df["subset_idealized"].iloc[0] == 0.0
+
+
+def test_consolidation_idempotent_no_duplicates():
+    """Verify that result consolidation is strictly idempotent and creates zero duplicate rows."""
+    from plot_and_consolidate import consolidate_results
+    out_dir = STAGE_DIR / "outputs"
+
+    # Run consolidation first time
+    consolidate_results(out_dir)
+
+    fm1 = pd.read_csv(out_dir / "fold_metrics.csv")
+    oof1 = pd.read_csv(out_dir / "oof_predictions.csv")
+    sub1 = pd.read_csv(out_dir / "subset_metrics.csv")
+    comp1 = pd.read_csv(out_dir / "comparison.csv")
+
+    assert fm1.duplicated(subset=["method", "fold"]).sum() == 0, "Duplicate (method, fold) found in fold_metrics!"
+    assert oof1.duplicated(subset=["case", "target", "method", "fold"]).sum() == 0, "Duplicate OOF predictions found!"
+    assert sub1.duplicated(subset=["subset", "method"]).sum() == 0, "Duplicate subset entries found!"
+
+    # Run consolidation second time
+    consolidate_results(out_dir)
+
+    fm2 = pd.read_csv(out_dir / "fold_metrics.csv")
+    oof2 = pd.read_csv(out_dir / "oof_predictions.csv")
+    sub2 = pd.read_csv(out_dir / "subset_metrics.csv")
+    comp2 = pd.read_csv(out_dir / "comparison.csv")
+
+    # Verify second run produced identical shape and content
+    assert fm1.shape == fm2.shape, f"fold_metrics duplicated rows on repeated run: {fm1.shape} vs {fm2.shape}"
+    assert oof1.shape == oof2.shape, f"oof_predictions duplicated rows on repeated run: {oof1.shape} vs {oof2.shape}"
+    assert sub1.shape == sub2.shape, f"subset_metrics duplicated rows on repeated run: {sub1.shape} vs {sub2.shape}"
+    assert comp1.shape == comp2.shape, f"comparison duplicated rows on repeated run: {comp1.shape} vs {comp2.shape}"
+    pd.testing.assert_frame_equal(fm1, fm2)
+    pd.testing.assert_frame_equal(comp1, comp2)

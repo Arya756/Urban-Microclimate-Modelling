@@ -225,7 +225,10 @@ def run_rfecv(
 ) -> Tuple[List[str], float, RFECV]:
     """
     Group-aware RFECV wrapper feature selection.
-    Uses LightGBM (100 trees, lr=0.05) and GroupKFold on outer training groups only.
+    
+    Two-stage architecture:
+      - Feature selection search: Uses LightGBM (100 trees, lr=0.05) and GroupKFold on outer training groups only.
+      - Final evaluation: Evaluated separately using the standardized 400-tree baseline LightGBM model on X_val.
 
     Returns:
         selected_features: List of feature names selected by RFECV.

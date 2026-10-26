@@ -29,9 +29,11 @@ Filter methods evaluate each feature using statistical properties before any mac
 
 ### 2. Wrapper Methods (Model-Guided Search)
 Instead of looking at features in isolation, wrapper methods use the machine learning model itself to test subsets of features:
-- **RFECV (Recursive Feature Elimination with Cross-Validation):** Trains a LightGBM model on all features, checks feature importance, prunes the weakest feature, and repeats. It uses an inner cross-validation loop to find the optimal number of features.
-- *Pros:* Captures complex interactions between features.
-- *Cons:* Slower because it trains many models iteratively.
+- **RFECV (Recursive Feature Elimination with Cross-Validation):** Evaluates feature subsets by iteratively eliminating the least important features. In our implementation:
+  - **Feature Selection Phase:** Uses a lightweight 100-tree LightGBM estimator (`n_estimators=100`, `learning_rate=0.05`) with group-aware inner cross-validation (`GroupKFold(n_splits=3)`) strictly on outer training data to find the optimal feature subset.
+  - **Evaluation Phase:** Trains the standardized 400-tree baseline LightGBM model (`n_estimators=400`, `learning_rate=0.05`) on the selected features and evaluates on the untouched outer validation fold.
+- *Pros:* Captures complex non-linear interactions between features and automatically prunes redundant variables.
+- *Cons:* Slower because it evaluates models iteratively across inner CV splits.
 
 ### 3. Dimensionality Reduction (PCA)
 - **Principal Component Analysis (PCA):** Rather than selecting a subset of original features, PCA rotates and combines all 34 features into new, uncorrelated mathematical axes called "principal components".
@@ -156,7 +158,8 @@ pipeline/S06b_feature_selection_AS/
 
 1. **Best Overall Choice — F-test Top 20:**
    - Prunes 14 redundant features (41% reduction).
-   - Achieves $R^2 = 0.8284$, slightly beating the full 34-feature model ($0.8217$) and lowering fold variability.
+   - Performs comparably to the baseline with 41% fewer features ($R^2 = 0.8284 \pm 0.0508$ vs. $0.8217 \pm 0.0552$).
+   - The small average numerical difference ($+0.0067$) is inconsistent across folds (+0.056, -0.025, +0.002, +0.015, -0.015), well within fold-to-fold variability ($\sigma_{\text{fold}} \approx 0.055$), and not yet proven to generalize to new urban morphologies.
    - Requires $<0.01$ seconds of compute.
    - Retains 100% physical interpretability.
 

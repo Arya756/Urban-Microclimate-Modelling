@@ -8,7 +8,7 @@ Implements and evaluates:
   2. Correlation Filtering (threshold 0.95, deterministic rule)
   3. Mutual Information (top 10, 15, 20)
   4. F-test (top 10, 15, 20)
-  5. Wrapper: RFECV with inner GroupKFold
+  5. Wrapper: RFECV with inner GroupKFold (100-tree search estimator, 400-tree evaluation model)
   6. Idealized vs. Realistic subset-specific runs (dropping subset_idealized)
   7. Paired fold comparisons and out-of-fold predictions.
 
@@ -355,24 +355,28 @@ def run_experiments(
     subset_metrics_df = pd.DataFrame(subset_metrics_records)
 
     # -----------------------------------------------------------------------
-    # Save outputs
+    # Save outputs (both raw source files and standard output files)
     # -----------------------------------------------------------------------
+    fold_metrics_df.to_csv(output_dir / "fs_fold_metrics.csv", index=False)
     fold_metrics_df.to_csv(output_dir / "fold_metrics.csv", index=False)
     comparison_df.to_csv(output_dir / "comparison.csv", index=False)
     paired_df.to_csv(output_dir / "paired_fold_comparisons.csv", index=False)
     selected_features_df.to_csv(output_dir / "selected_features.csv", index=False)
     stability_df.to_csv(output_dir / "feature_selection_stability.csv", index=False)
+    oof_predictions_df.to_csv(output_dir / "fs_oof_predictions.csv", index=False)
     oof_predictions_df.to_csv(output_dir / "oof_predictions.csv", index=False)
+    subset_metrics_df.to_csv(output_dir / "fs_subset_metrics.csv", index=False)
     subset_metrics_df.to_csv(output_dir / "subset_metrics.csv", index=False)
 
     print("\n" + "=" * 70)
     print("Files Saved Successfully:")
-    print(f"  {output_dir / 'fold_metrics.csv'}")
+    print(f"  {output_dir / 'fold_metrics.csv'} (and fs_fold_metrics.csv)")
     print(f"  {output_dir / 'comparison.csv'}")
     print(f"  {output_dir / 'paired_fold_comparisons.csv'}")
     print(f"  {output_dir / 'selected_features.csv'}")
     print(f"  {output_dir / 'feature_selection_stability.csv'}")
-    print(f"  {output_dir / 'oof_predictions.csv'}")
+    print(f"  {output_dir / 'oof_predictions.csv'} (and fs_oof_predictions.csv)")
+    print(f"  {output_dir / 'subset_metrics.csv'} (and fs_subset_metrics.csv)")
     print(f"  {output_dir / 'subset_metrics.csv'}")
     print("=" * 70)
 
