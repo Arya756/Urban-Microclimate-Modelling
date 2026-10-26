@@ -6,8 +6,9 @@ Case-weighted aggregates weight each case equally regardless of domain size.
 
 Public API
 ----------
-case_metrics(y_true, y_pred, mask)   : dict of metrics for a single case
+case_metrics(y_true, y_pred, mask)   : dict of metrics for a single case (spatial field)
 pooled_metrics(per_case_list)         : aggregate across a list of case dicts
+regression_metrics(y_true, y_pred)   : scalar regression metrics across independent cases
 """
 
 from __future__ import annotations
@@ -155,3 +156,92 @@ def _is_nan(x: Any) -> bool:
         return bool(x != x)  # NaN != NaN
     except Exception:
         return False
+
+
+# ---------------------------------------------------------------------------
+# Scalar cross-case regression metrics
+# ---------------------------------------------------------------------------
+
+def regression_metrics(
+    y_true: np.ndarray | list[float],
+    y_pred: np.ndarray | list[float],
+    target: str = "",
+) -> dict[str, Any]:
+    """Compute standard scalar regression metrics across independent cases for one target.
+
+    Parameters
+    ----------
+    y_true : 1-D array-like of true target values across cases.
+    y_pred : 1-D array-like of predicted values across cases.
+    target : optional target variable identifier (e.g. 'U_mean').
+
+    Returns
+    -------
+    dict with keys:
+        target, n, r2, mae, rmse, ss_res, ss_tot, mean_true, mean_pred,
+        std_true, std_pred
+
+    Raises
+    ------
+    ValueError: if lengths do not match or arrays contain non-finite values (NaN or Inf).
+    """
+    y_t = np.asarray(y_true, dtype=float).ravel()
+    y_p = np.asarray(y_pred, dtype=float).ravel()
+
+    if len(y_t) != len(y_p):
+        raise ValueError(
+            f"Length mismatch in regression_metrics for target '{target}': "
+            f"len(y_true)={len(y_t)} != len(y_pred)={len(y_p)}"
+        )
+
+    if not np.all(np.isfinite(y_t)):
+        raise ValueError(f"y_true contains non-finite values (NaN or Inf) for target '{target}'")
+    if not np.all(np.isfinite(y_p)):
+        raise ValueError(f"y_pred contains non-finite values (NaN or Inf) for target '{target}'")
+
+    n = len(y_t)
+    nan = float("nan")
+    if n == 0:
+        return {
+            "target": target,
+            "n": 0,
+            "r2": nan,
+            "mae": nan,
+            "rmse": nan,
+            "ss_res": nan,
+            "ss_tot": nan,
+            "mean_true": nan,
+            "mean_pred": nan,
+            "std_true": nan,
+            "std_pred": nan,
+        }
+
+    residuals = y_p - y_t
+    mae = float(np.mean(np.abs(residuals)))
+    rmse = float(np.sqrt(np.mean(residuals ** 2)))
+
+    ss_res = float(np.sum(residuals ** 2))
+    ss_tot = float(np.sum((y_t - np.mean(y_t)) ** 2))
+
+    # Constant target handling:
+    # If ss_tot == 0 (zero variance in ground truth across cases):
+    # R² is mathematically undefined when denominator is zero.
+    # Documented convention: return NaN (or 1.0 if residuals are also exactly 0).
+    if ss_tot > 0.0:
+        r2 = 1.0 - (ss_res / ss_tot)
+    else:
+        r2 = 1.0 if ss_res == 0.0 else nan
+
+    return {
+        "target": target,
+        "n": n,
+        "r2": r2,
+        "mae": mae,
+        "rmse": rmse,
+        "ss_res": ss_res,
+        "ss_tot": ss_tot,
+        "mean_true": float(np.mean(y_t)),
+        "mean_pred": float(np.mean(y_p)),
+        "std_true": float(np.std(y_t)),
+        "std_pred": float(np.std(y_p)),
+    }

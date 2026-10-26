@@ -31,7 +31,9 @@ pipeline/S05_feature_engineering/
     ├── test_aerodynamic.py
     ├── test_spatial_features.py
     ├── test_fetch_features.py
-    └── test_feature_assembly.py
+    ├── test_feature_assembly.py
+    ├── test_topo_orientation.py
+    └── test_valid_mask.py
 ```
 
 ---
@@ -97,7 +99,7 @@ $$\lambda_{p, R} = \mathcal{F}^{-1}\left( \mathcal{F}(M_{\text{bldg}}) \cdot \ma
 
 ## Leakage Prevention Protocol
 
-1. **Target Isolation:** Target wind speed ($Y = U(z=1.75\text{ m}) / u_\tau$) and turbulence ($TKE / u_\tau^2$) are loaded strictly through `load_normalized_target()` into separate `'Y'` and `'TKE_norm'` arrays.
+1. **Target Isolation & Valid Masking:** Target wind speed ($Y = U(z=1.75\text{ m}) / u_\tau$) and turbulence ($TKE / u_\tau^2$) are loaded strictly through `load_normalized_target(ped_path, u_tau, topo_H=H)` into separate `'Y'` and `'TKE_norm'` arrays. The valid mask unconditionally excludes building cells (`topo_H > 0`) to prevent CFD sub-grid boundary artefacts from leaking into the target space, while preserving legitimate zero-velocity predictions on open ground.
 2. **Predictor Integrity:** Predictor feature extraction functions (`assemble_case_features`, `assemble_pixel_feature_tensor`) have zero access to simulation output fields.
 3. **Split Preservation:** Preserves `recommended_split` ('train', 'val', 'test'), `split_group`, and `fold` from `splits.json` and `model_ready_cases.csv`.
 

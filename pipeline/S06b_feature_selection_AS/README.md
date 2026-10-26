@@ -114,7 +114,7 @@ pipeline/S06b_feature_selection_AS/
 ├── run_pca.py                     # Main pipeline for PCA experiments
 ├── plot_and_consolidate.py        # Generates unified comparison tables and 6 figures
 ├── tests/
-│   └── test_feature_selection.py  # Comprehensive test suite (7 pytest tests)
+│   └── test_feature_selection.py  # Comprehensive test suite (8 pytest tests)
 └── outputs/
     ├── comparison.csv             # Master comparison table across all 11 methods
     ├── fold_metrics.csv           # Detailed metrics (R², MAE, RMSE) per fold and method

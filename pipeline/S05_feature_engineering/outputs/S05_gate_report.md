@@ -1,6 +1,6 @@
 # Stage S05 Gate Report — Urban Microclimate Feature Engineering
 
-- **Date:** 2026-10-25 17:57:43 UTC
+- **Date:** 2026-10-26 16:17:21 UTC
 - **Total Cases Processed:** 535
 - **Numeric NaN Values:** 0
 - **Numeric Inf Values:** 0
@@ -9,7 +9,7 @@
 - **Periodic Boundary Verification:** PASS (Cyclic wrapping verified across periodic distance, multi-scale convolutions, and directional fetch)
 - **Macdonald & Kanda Parameterizations:** PASS (Empirical formulas verified on uniform and variable building canopies)
 - **Multi-channel Spatial Tensor Output:** 22 channels per case saved as compressed `.npz` files in `outputs/pixel_features/`
-- **Elapsed Pipeline Runtime:** 0.01 seconds
+- **Elapsed Pipeline Runtime:** 385.47 seconds
 
 ## Key Feature Range Summary
 
@@ -24,6 +24,6 @@
 | $d$ (Kanda Displacement) | 3.8218 | 17.5916 | 121.4816 | m |
 | $z_0$ (Kanda Roughness) | 0.1553 | 1.9991 | 28.5826 | m |
 | Distance to Building (Mean) | 1.31 | 9.17 | 30.21 | m |
-| Upwind Fetch (Mean) | 3.67 | 57.24 | 125.24 | m |
+| Upwind Fetch (Mean) | 3.67 | 57.20 | 125.24 | m |
 
 ## Stage Gate Result: PASSED

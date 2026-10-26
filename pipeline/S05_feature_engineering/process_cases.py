@@ -322,8 +322,15 @@ def process_single_case(
         logger.info(f"Case {case_id} already processed. Skipping.")
         return None
 
-    # Load topography
-    H = np.loadtxt(topo_path, dtype=np.float64)
+    # Load topography and correct row orientation.
+    # The _topo files are stored top-row-first (row 0 = maximum physical-y),
+    # while _ped.nc wind maps (loaded via h5py) use bottom-row-first
+    # (row 0 = minimum physical-y, y-axis increases downward in array).
+    # np.flipud aligns both arrays to the same spatial frame.
+    # Verified across 524/538 non-symmetric cases: pixel agreement rises from
+    # ~0.734 (no flip) to ~0.984 (flipud). The remaining 14 cases are perfectly
+    # vertically-symmetric UA* grids where H == np.flipud(H) by construction.
+    H = np.flipud(np.loadtxt(topo_path, dtype=np.float64))
     subset = meta.get("subset", "idealized")
     dx = 0.5 if subset == "idealized" else 1.0
     dy = dx
@@ -366,7 +373,7 @@ def process_single_case(
         ped_path = cfg.raw_data_dir / case_id / f"{case_id}_ped.nc"
         if ped_path.exists():
             try:
-                Y, tke_norm, valid_mask = load_normalized_target(ped_path, u_tau=u_tau)
+                Y, tke_norm, valid_mask = load_normalized_target(ped_path, u_tau=u_tau, topo_H=H)
                 save_dict["Y"] = Y
                 save_dict["TKE_norm"] = tke_norm
                 save_dict["valid_mask"] = valid_mask

@@ -135,7 +135,17 @@ def test_pca_train_fit_only():
 
 
 def test_baseline_reproduction_exact_match():
-    """Verify that our evaluation harness reproduces the exact S06 ablation baseline score."""
+    """Verify that our evaluation harness reproduces the S06 ablation baseline score.
+
+    Reference values updated after S05 Issues 1–3 (topography orientation fix, valid
+    target-cell mask, and Kanda aerodynamic parameter corrections) regenerated
+    case_features.csv. Directional features (upwind fetch, lambda_f_dir) changed due to
+    the corrected np.flipud(H) orientation, shifting the cross-validated baseline by ~0.0015 R².
+    The updated reference is stable and reproducible from the corrected feature table.
+
+    Pre-fix reference  (case_features.csv 2026-10-25): mean_r2 = 0.8217, std_r2 = 0.0552
+    Corrected reference (case_features.csv 2026-10-26): mean_r2 = 0.8202, std_r2 = 0.0663
+    """
     full_df, physics_features = load_dataset(REPO_ROOT)
     folds = full_df["fold"].values.astype(int)
     y = full_df["U_mean"].values
@@ -154,9 +164,9 @@ def test_baseline_reproduction_exact_match():
     mean_r2 = float(np.mean(fold_r2s))
     std_r2 = float(np.std(fold_r2s, ddof=0))
 
-    # S06 ablation_table.csv reported: mean_r2 = 0.8216679916878464, std_r2 = 0.05524919577081922
-    assert abs(mean_r2 - 0.8216679916878464) < 1e-5, f"Baseline mean R2 mismatch: {mean_r2} vs 0.8217"
-    assert abs(std_r2 - 0.05524919577081922) < 1e-5, f"Baseline std R2 mismatch: {std_r2} vs 0.0552"
+    # Corrected reference from case_features.csv regenerated 2026-10-26 (post S05 Issues 1-3)
+    assert abs(mean_r2 - 0.8201708882298823) < 1e-5, f"Baseline mean R2 mismatch: {mean_r2} vs 0.8202"
+    assert abs(std_r2 - 0.06630199275761907) < 1e-5, f"Baseline std R2 mismatch: {std_r2} vs 0.0663"
 
 
 def test_subset_drops_constant_feature():
