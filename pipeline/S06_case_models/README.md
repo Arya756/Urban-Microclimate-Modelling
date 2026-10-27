@@ -26,63 +26,63 @@ Predicts four summary statistics of the pedestrian-level wind field of each case
 
 ## S06c results
 
+Scores below come from `outputs/s06c/` after the pipeline audit of 27 October 2026 (corrected features and targets, development groups merged by city in splits version 2).
+
 ### U_mean (out-of-fold, tuned)
 
 | Model | R² | R² idealized | R² realistic | MAE (U/u*) | Fold R² |
 | --- | --- | --- | --- | --- | --- |
-| XGBoost | **0.836** | 0.970 | **0.700** | 0.161 | 0.836 ± 0.053 |
-| LightGBM | 0.828 | 0.967 | 0.686 | 0.164 | 0.828 ± 0.076 |
-| Gaussian process | 0.819 | **0.982** | 0.656 | **0.159** | 0.820 ± 0.100 |
-| Random forest | 0.817 | 0.966 | 0.666 | 0.173 | 0.817 ± 0.052 |
-| kNN | 0.690 | 0.935 | 0.439 | 0.212 | 0.700 ± 0.085 |
-| SVR (RBF) | 0.617 | 0.958 | 0.275 | 0.180 | 0.552 ± 0.411 |
-| Ridge | 0.383 | 0.885 | -0.128 | 0.314 | 0.367 ± 0.249 |
-| Training mean | -0.004 | -0.107 | -0.061 | 0.467 | |
-| B1: random forest, 9 basic features, untuned | 0.735 | 0.890 | 0.565 | 0.233 | 0.730 ± 0.100 |
+| LightGBM | **0.876** | 0.961 | **0.787** | **0.143** | 0.865 ± 0.033 |
+| Random forest | 0.828 | 0.958 | 0.694 | 0.158 | 0.829 ± 0.025 |
+| Gaussian process | 0.816 | **0.976** | 0.655 | 0.164 | 0.780 ± 0.141 |
+| XGBoost | 0.784 | 0.956 | 0.608 | 0.163 | 0.792 ± 0.051 |
+| SVR (RBF) | 0.717 | 0.958 | 0.472 | 0.187 | 0.711 ± 0.065 |
+| kNN | 0.655 | 0.930 | 0.373 | 0.219 | 0.669 ± 0.065 |
+| Ridge | 0.197 | 0.864 | -0.480 | 0.344 | -0.004 ± 0.936 |
+| Training mean | -0.011 | -0.115 | -0.071 | 0.470 | |
+| B1: random forest, 9 basic features, untuned | 0.742 | 0.881 | 0.587 | 0.230 | 0.730 ± 0.025 |
+
+Fold R² is the mean ± sample standard deviation over the five folds.
 
 ### All targets (R², tuned, full feature set)
 
 | Model | U_mean | U_p95 | U_std | TKE_mean |
 | --- | --- | --- | --- | --- |
-| XGBoost | 0.836 | 0.754 | 0.724 | 0.916 |
-| LightGBM | 0.828 | 0.751 | 0.696 | 0.921 |
-| Random forest | 0.817 | 0.749 | 0.721 | 0.911 |
-| Gaussian process | 0.819 | 0.666 | 0.683 | 0.934 |
-| B1 | 0.735 | 0.670 | 0.595 | 0.865 |
+| LightGBM | 0.876 | 0.767 | 0.694 | 0.925 |
+| Random forest | 0.828 | 0.725 | 0.683 | 0.898 |
+| Gaussian process | 0.816 | 0.710 | 0.685 | 0.947 |
+| XGBoost | 0.784 | 0.723 | 0.741 | 0.904 |
+| B1 | 0.742 | 0.660 | 0.584 | 0.860 |
 
 ### Findings
 
-1. **Tree ensembles lead, and they are tied.**
-   - XGBoost, LightGBM and the random forest beat B1 on U_mean by 0.08 to 0.10 R². The 95% bootstrap intervals of each difference exclude zero.
-   - The differences among the three are within resampling noise: XGBoost minus LightGBM is 0.008 [-0.019, 0.032], and XGBoost minus the random forest is 0.019 [-0.019, 0.057].
-   - On U_p95 all three beat B1 by about 0.08 (intervals exclude zero).
-2. **Tuning adds little.** With fixed default settings the random forest scores 0.815, LightGBM 0.827 and XGBoost 0.811 on U_mean; only XGBoost gains noticeably from tuning.
-   - An earlier run, with 3 inner folds and a narrower leaf-size range for LightGBM than for XGBoost, made LightGBM look 0.06 worse. Matching the search spaces removed the gap, so the comparison is sensitive to how each model is tuned.
-   - Kernel and linear models are the least stable. SVR scores 0.62 to 0.84 on four folds but -0.26 on the fifth, because the hyperparameters chosen on the training folds did not carry over to the held-out cities.
+1. **LightGBM leads.**
+   - It beats B1 on U_mean by 0.135 R² [0.095, 0.178] (95% group-bootstrap interval), and the random forest beats B1 by 0.086 [0.039, 0.137].
+   - The gains of tuned XGBoost (0.042 [-0.028, 0.113]) and the Gaussian process (0.075 [-0.042, 0.157]) are not significant.
+   - LightGBM beats the random forest by 0.048 [0.005, 0.099] and XGBoost by 0.092 [0.023, 0.167].
+2. **Tuning can help or hurt.**
+   - With default settings the random forest scores 0.831, LightGBM 0.829 and XGBoost 0.851, and default XGBoost and LightGBM are not significantly different (0.022 [-0.031, 0.064]).
+   - Tuning raises LightGBM to 0.876 but lowers XGBoost to 0.784. The loss lies almost entirely in one fold (R² 0.727 tuned against 0.874 with defaults), where the chosen setting strongly underpredicts two very open neighbourhoods, CA-Sunset and US-WestPhoenix, whose cities are held out with them.
+   - Hyperparameters chosen on the training cities need not carry over to unseen cities. Ridge regression is the least stable model: one fold scores -1.48.
 3. **Real cities are the hard part.**
-   - Idealized arrays are predicted almost perfectly (R² 0.97).
-   - Realistic neighbourhoods reach 0.70 for U_mean and 0.55 for U_p95.
+   - Idealized arrays are predicted almost perfectly (R² about 0.96).
+   - Realistic neighbourhoods reach 0.79 for U_mean and 0.57 for U_p95 with LightGBM.
    - Peak winds depend on local street geometry that case-level summaries do not describe; this is the gap S07 measures.
-4. **Physics features help most on real cities.**
-   - Adding fetch, distance-to-wall, displacement-height and roughness features raises U_mean R² from 0.71–0.77 (basic or morphology features) to 0.82–0.84.
-   - On realistic cases R² rises from 0.52–0.61 to 0.67–0.70.
-   - The 8 extra morphology features add between 0 and 0.05 over the 9 basic ones.
-5. **What drives mean wind.** TreeSHAP on the held-out folds (`outputs/s06c/figures/shap_u_mean.png`) ranks these features highest:
-   - frontal area density λf (more frontal area, less wind);
+4. **Physics features help most.** With the 9 basic features the tuned ensembles reach 0.72 to 0.74 (realistic 0.51 to 0.55). Adding fetch, distance-to-wall, displacement-height and roughness features raises LightGBM to 0.876 and the random forest to 0.828; the 8 morphology features alone change little.
+5. **What drives mean wind.** TreeSHAP for LightGBM on the held-out folds (`outputs/s06c/figures/shap_u_mean.png`) ranks these features highest:
    - mean and 90th-percentile distance to the nearest wall (more open space, more wind);
-   - mean upwind fetch;
-   - built volume per unit area;
-   - lateral fetch;
-   - the Kanda roughness length.
-6. **Random splits flatter models.** Scored on realistic cases, random 5-fold CV overstates R² by 0.03 for the random forest, 0.04 for LightGBM and 0.45 for ridge, compared with folds that hold out whole cities (`leakage_random_vs_grouped.png`).
-7. **No transfer between subsets.** A model trained only on idealized arrays reaches R² 0.09 on real cities; trained only on real cities, it reaches -0.47 on idealized arrays. Both subsets must be in the training data.
-8. **Flagged cases do not drive the results.** Leaving out the six flagged cases changes R² by less than 0.01 (`r2_without_flagged` in `model_comparison.csv`).
+   - frontal area density λf (more frontal area, less wind);
+   - mean upwind and lateral fetch;
+   - built volume per unit area and λp.
+6. **Random splits flatter models.** Scored on realistic cases, random 5-fold CV overstates R² by 0.00 for the random forest, 0.04 for LightGBM and kNN, and 0.61 for ridge, compared with folds that hold out whole cities (`leakage_random_vs_grouped.png`).
+7. **No transfer between subsets.** Untuned LightGBM trained only on idealized arrays reaches R² 0.12 on real cities (0.70 when real cities are in training); trained only on real cities, it reaches -0.51 on idealized arrays (0.95). Both subsets must be in the training data.
+8. **Flagged cases do not drive the results.** Leaving out the six flagged cases changes R² by at most 0.007 (`r2_without_flagged` in `model_comparison.csv`).
 
 ## Why S06a is superseded
 
 S06a (first run) predicted the same statistics in m/s:
 - they were taken from the S04 master table, with open ground defined by NaN in the wind files;
-- for 52 cases that biased the mean wind by more than 1% (up to 11.7%);
+- for 59 development cases that biases the mean wind by more than 1% (up to 14.6%) compared with the raster mask used now;
 - its Kanda (2013) features used a form that is not the published one;
 - its first runs tuned hyperparameters on the outer validation folds.
 

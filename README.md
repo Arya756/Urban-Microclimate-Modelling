@@ -1,11 +1,12 @@
 # Urban Microclimate Modelling
 
-[![CI](https://github.com/mahir-m01/Urban-Microclimate-Modelling/actions/workflows/ci.yml/badge.svg)](https://github.com/mahir-m01/Urban-Microclimate-Modelling/actions/workflows/ci.yml)
-![Python 3.12](https://img.shields.io/badge/python-3.12-3776AB?logo=python&logoColor=white)
-[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Data: UrbanTALES](https://img.shields.io/badge/data-UrbanTALES%20(CC%20BY--NC%204.0)-2a78d6)](https://urbantales.vercel.app)
-![Phase 1](https://img.shields.io/badge/phase%201-machine%20learning-1baf7a)
+[![CI](https://img.shields.io/github/actions/workflow/status/mahir-m01/Urban-Microclimate-Modelling/ci.yml?branch=main&label=CI&logo=githubactions&logoColor=white&labelColor=24292f&style=flat-square)](https://github.com/mahir-m01/Urban-Microclimate-Modelling/actions/workflows/ci.yml)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-3776ab?logo=python&logoColor=white&labelColor=24292f&style=flat-square)](https://www.python.org/)
+[![uv](https://img.shields.io/badge/env-uv-6340ac?logo=uv&logoColor=white&labelColor=24292f&style=flat-square)](https://github.com/astral-sh/uv)
+[![Ruff](https://img.shields.io/badge/lint-ruff-c2410c?logo=ruff&logoColor=white&labelColor=24292f&style=flat-square)](https://github.com/astral-sh/ruff)
+[![Data: UrbanTALES](https://img.shields.io/badge/data-UrbanTALES-2a78d6?labelColor=24292f&style=flat-square)](https://urbantales.vercel.app)
+[![Licence: CC BY-NC 4.0](https://img.shields.io/badge/licence-CC%20BY--NC%204.0-57606a?labelColor=24292f&style=flat-square)](https://creativecommons.org/licenses/by-nc/4.0/)
+![Phase 1: machine learning](https://img.shields.io/badge/phase%201-machine%20learning-1a7f5a?labelColor=24292f&style=flat-square)
 
 Surrogate models for pedestrian-level urban wind, trained on 538 large-eddy simulations of idealized building arrays and real neighbourhoods in 22 countries.
 
@@ -31,7 +32,7 @@ This work uses UrbanTALES (Nazarian et al., 2025), a public collection of 538 PA
 | Subset | Cases | Description |
 | --- | --- | --- |
 | Idealized | 224 | Aligned and staggered building arrays; eight plan-area densities; uniform and variable heights; two wind directions; 0.5 m grid |
-| Realistic | 314 | Neighbourhoods in 22 countries (50 city groups), derived from OpenStreetMap; uniform and real building heights; 1 m grid (0.5 m for 5 cases) |
+| Realistic | 314 | Neighbourhoods in 22 countries (50 city codes), derived from OpenStreetMap; uniform and real building heights; 1 m grid (0.5 m for 5 cases) |
 
 Each case provides:
 - a building-height raster;
@@ -41,9 +42,10 @@ Each case provides:
 
 The data is distributed by its authors under CC BY-NC 4.0. The simulation fields are not redistributed in this repository; `data/` holds only the case catalog, the official per-case metadata table and the name map between them.
 
-**Data quality.** An audit of every file found three issues that change downstream results. All three are handled once, in the shared loader `urbanwind.data.load_case`; details are in [`data/README.md`](data/README.md).
+**Data quality.** An audit of every file found four issues that change downstream results. All are handled once, in the shared loader `urbanwind.data.load_case`; details are in [`data/README.md`](data/README.md) and [`pipeline/S02_preprocessing`](pipeline/S02_preprocessing).
 - The building rasters are stored upside down relative to the wind fields. Open-ground agreement is 0.71 as stored and 0.99 after a flip.
-- Some files store values inside buildings. A mask built from missing values biases the mean wind of 52 cases by up to 11.7%.
+- Some files store values inside buildings, so open ground is taken from the raster, not from missing values.
+- Some open-ground cells hold a time-mean speed of exactly zero: the simulation treated them as buildings. They are left out (284 of 292 realistic development cases have some). Together with the raster mask, this changes the mean wind of 59 development cases by more than 1%, by up to 14.6%.
 - Each case has its own friction velocity $u_*$, which sets the wind scale.
 
 ## Pipeline
@@ -53,9 +55,9 @@ flowchart LR
     A[("UrbanTALES<br/>538 LES cases")] --> B["Loader and audit<br/>flip, raster mask,<br/>per-case u*, direction"]
     B --> C["Features<br/>34 case-level, 30 pixel-level<br/>(raster and direction only)"]
     B --> D["Targets<br/>U/u* field and<br/>case statistics"]
-    C --> E["Grouped folds<br/>136 development groups<br/>24 frozen test groups"]
+    C --> E["Grouped folds<br/>93 development groups<br/>24 frozen test groups"]
     D --> E
-    E --> F["Case-level models<br/>8 regressors,<br/>nested grouped CV"]
+    E --> F["Case-level models<br/>8 models,<br/>nested grouped CV"]
     E --> G["Pixel-level model<br/>LightGBM and hybrid"]
     F --> H[("Frozen test set<br/>scored once")]
     G --> H
@@ -70,55 +72,59 @@ flowchart LR
 
 ## Phase 1 results
 
-All numbers are out-of-fold scores on 482 development cases. Each fold holds out whole cities and layout families, and hyperparameters are chosen in an inner grouped loop.
+All development numbers are out-of-fold scores on 482 development cases. Each fold holds out whole cities and layout families (93 groups), and hyperparameters are chosen in an inner grouped loop. The numbers below follow the pipeline audit of 27 October 2026, which corrected the features, the targets and the development groups.
 
 ### Case level: mean wind of a neighbourhood
 
 | Model | $U_\mathrm{mean}$ $R^2$ | idealized | realistic | $U_\mathrm{p95}$ $R^2$ |
 | --- | --- | --- | --- | --- |
-| XGBoost | **0.836** | 0.970 | **0.700** | **0.754** |
-| LightGBM | 0.828 | 0.967 | 0.686 | 0.751 |
-| Gaussian process (ARD Matérn) | 0.819 | **0.982** | 0.656 | 0.666 |
-| Random forest | 0.817 | 0.966 | 0.666 | 0.749 |
-| kNN | 0.690 | 0.935 | 0.439 | 0.654 |
-| Ridge | 0.383 | 0.885 | -0.128 | 0.508 |
-| Baseline B1: random forest, 9 basic features | 0.735 | 0.890 | 0.565 | 0.670 |
+| LightGBM | **0.876** | 0.961 | **0.787** | **0.767** |
+| Random forest | 0.828 | 0.958 | 0.694 | 0.725 |
+| Gaussian process (ARD Matérn) | 0.816 | **0.976** | 0.655 | 0.710 |
+| XGBoost | 0.784 | 0.956 | 0.608 | 0.723 |
+| SVR (RBF) | 0.717 | 0.958 | 0.472 | 0.700 |
+| kNN | 0.655 | 0.930 | 0.373 | 0.668 |
+| Ridge | 0.197 | 0.864 | -0.480 | 0.380 |
+| Baseline B1: random forest, 9 basic features | 0.742 | 0.881 | 0.587 | 0.660 |
 
-- **The ensembles are tied.** XGBoost, LightGBM and random forests cannot be separated by a group bootstrap (XGBoost minus LightGBM: 0.008 [-0.019, 0.032]), and all three beat the baseline by 0.08 to 0.10.
-- **What drives the wind.** SHAP ranks frontal area, distance to walls, upwind fetch, built volume and the Kanda roughness length highest.
-- **Random splits flatter models.** Random 5-fold cross-validation overstates realistic $R^2$ by 0.03 to 0.04 for tree models and by 0.45 for ridge.
+- **LightGBM leads.** It beats the baseline by 0.135 R² [0.095, 0.178] (95% group-bootstrap interval), and the random forest by 0.048 [0.005, 0.099]. The gains of tuned XGBoost and the Gaussian process over the baseline are not significant.
+- **Tuning can help or hurt.** With default settings XGBoost (0.851) and LightGBM (0.829) are tied. Tuning lifts LightGBM, but XGBoost's inner search picks settings that fail on two very open neighbourhoods whose cities are held out with them.
+- **What drives the wind.** SHAP ranks distance to walls, frontal area, upwind and lateral fetch, and built volume highest.
+- **Random splits flatter models.** Random 5-fold cross-validation overstates realistic $R^2$ by up to 0.04 for tree models and by 0.61 for ridge.
 
 <p align="center"><img src="pipeline/S06_case_models/outputs/s06c/figures/model_ladder_u_mean.png" width="640" alt="Case-level model comparison"></p>
 
 ### Field level: the wind map
 
-| Prediction at every open cell | Pooled $R^2$ | Median per-case $R^2$ (idealized / realistic) |
-| --- | --- | --- |
-| True case mean everywhere (oracle) | 0.310 | 0 / 0 |
-| Pixel-level LightGBM, 30 features | **0.593** | 0.457 / 0.253 |
-| Hybrid: pattern times case-level mean | 0.581 | **0.478 / 0.254** |
+| Prediction at every open cell | Pooled $R^2$ | Median per-case $R^2$ (idealized / realistic) | Median NRMSE |
+| --- | --- | --- | --- |
+| True case mean everywhere (oracle) | 0.311 | 0 / 0 | 0.549 |
+| Pixel-level LightGBM, 30 features | **0.591** | 0.418 / 0.247 | 0.468 |
+| Hybrid: pattern times case-level mean | 0.576 | **0.431 / 0.251** | **0.467** |
 
 - **Level versus pattern.** A tabular model recovers the level of each field, but only part of its pattern: corner jets, wakes and canyon vortices are smoothed, and peak winds are underpredicted.
-- **The limit is the features.** A random case split does not change this, and neither do eight times more training cells. A far less regularised model fits its training cases better but scores no better on unseen ones.
+- **The limit is the features.** A random case split changes this little. A far less regularised model fits its training cases better but scores no better on unseen ones.
 - **Why Phase 2.** This gap is the motivation for convolutional models that read the geometry directly.
 
 <p align="center"><img src="pipeline/S07_pixel_model/outputs/figures/error_maps_realistic.png" width="820" alt="Error maps on held-out realistic neighbourhoods"></p>
 
-### Frozen test set, scored once
+### Frozen test set
 
-After all choices were fixed on the development folds, the final models were refitted on all 482 development cases and scored once on the 53 cases of the 24 frozen test groups (34 idealized, 19 realistic). Details are in [`pipeline/S09_phase1_evaluation`](pipeline/S09_phase1_evaluation).
+After all choices were fixed on the development folds, the final models were refitted on all 482 development cases and scored on the 53 cases of the 24 frozen test groups (34 idealized, 19 realistic). The test set was first scored on 26 October 2026 and scored a second time on 27 October 2026, after the pipeline audit; no test score was used for any choice, and `pipeline/S09_phase1_evaluation/outputs/test_scored.json` records both runs and the reason. Details are in [`pipeline/S09_phase1_evaluation`](pipeline/S09_phase1_evaluation).
 
 | Model | $U_\mathrm{mean}$ $R^2$ | idealized | realistic |
 | --- | --- | --- | --- |
-| SVR (RBF) | 0.884 | 0.976 | 0.737 |
-| Random forest | 0.871 | 0.984 | 0.690 |
-| LightGBM | 0.867 | 0.989 | 0.673 |
-| XGBoost | 0.848 | 0.990 | 0.623 |
-| Baseline B1 | 0.790 | 0.918 | 0.571 |
-| Pixel-level LightGBM (pooled field $R^2$) | 0.676 | 0.892 | 0.612 |
+| Gaussian process | 0.931 | 0.985 | 0.843 |
+| XGBoost | 0.898 | 0.975 | 0.772 |
+| Random forest | 0.883 | 0.971 | 0.740 |
+| kNN | 0.870 | 0.959 | 0.723 |
+| LightGBM | 0.865 | 0.974 | 0.690 |
+| SVR (RBF) | 0.857 | 0.974 | 0.669 |
+| Baseline B1 | 0.827 | 0.919 | 0.666 |
+| Pixel-level LightGBM (pooled field $R^2$) | 0.680 | 0.893 | 0.617 |
 
-- Every non-linear model again beats the baseline, and the field models reproduce the development picture.
-- With only 19 realistic test cases, the test set confirms generalisation but cannot rank models that differ by a few hundredths. The development group bootstrap over 482 cases, which finds the leading models tied, is the evidence for ranking.
+- Every non-linear model beats the baseline, including kNN and SVR, which were below it in development, and the field models reproduce the development picture.
+- The order of the leading models differs from development: with only 19 realistic test cases, a few cases decide it. The test set confirms generalisation but cannot rank close models; the development comparison over 482 cases is the evidence for ranking.
 
 ## Repository structure
 
@@ -136,7 +142,7 @@ Urban-Microclimate-Modelling/
 │   ├── S06b_feature_selection_AS/  feature selection and PCA study
 │   ├── S07_pixel_model/            pixel-level model and diagnostics
 │   └── S09_phase1_evaluation/      one-time scoring of the frozen test set
-├── results/                        experiment log (runs.csv); predictions are not tracked
+├── results/                        experiment log (runs.csv; runs_v1.csv is the log before the metric columns were corrected); predictions are not tracked
 ├── .github/workflows/              lint and tests on every pull request
 ├── pyproject.toml, uv.lock         pinned environment
 └── README.md
