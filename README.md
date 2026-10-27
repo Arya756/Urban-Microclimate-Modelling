@@ -59,7 +59,7 @@ flowchart LR
     D --> E
     E --> F["Case-level models<br/>8 models,<br/>nested grouped CV"]
     E --> G["Pixel-level model<br/>LightGBM and hybrid"]
-    F --> H[("Frozen test set<br/>scored once")]
+    F --> H[("Frozen test set<br/>final scoring")]
     G --> H
 ```
 
@@ -126,6 +126,28 @@ After all choices were fixed on the development folds, the final models were ref
 - Every non-linear model beats the baseline, including kNN and SVR, which were below it in development, and the field models reproduce the development picture.
 - The order of the leading models differs from development: with only 19 realistic test cases, a few cases decide it. The test set confirms generalisation but cannot rank close models; the development comparison over 482 cases is the evidence for ranking.
 
+## Reproducing the results
+
+Requires Python 3.12 and [uv](https://github.com/astral-sh/uv).
+
+```bash
+uv sync                                                          # pinned environment
+uv run python pipeline/S01_data_ingestion/download_urbantales.py   # case files into data/raw/ (about 4.8 GB; restartable)
+uv run python pipeline/S02_preprocessing/build_case_targets.py     # case-level targets (development cases only)
+uv run python pipeline/S05_feature_engineering/process_cases.py    # case-level features
+uv run python pipeline/S06_case_models/s06c_model_comparison.py    # case-level models (about 20 minutes)
+PYTHONPATH=. uv run python pipeline/S06b_feature_selection_AS/run_feature_selection.py
+PYTHONPATH=. uv run python pipeline/S06b_feature_selection_AS/run_pca.py
+PYTHONPATH=. uv run python pipeline/S06b_feature_selection_AS/plot_and_consolidate.py
+uv run python pipeline/S07_pixel_model/s07_pixel_model.py         # pixel-level model (about 35 minutes)
+uv run python pipeline/S07_pixel_model/s07_diagnostics.py          # diagnostics (about 30 minutes)
+uv run ruff check src pipeline && uv run pytest -q                 # lint and tests
+```
+
+- The splits in `data/splits.json` are frozen; do not regenerate them.
+- The frozen test set has already been scored (`pipeline/S09_phase1_evaluation`), and the scoring script refuses to run again.
+- Each stage README lists its inputs, outputs and results.
+
 ## Repository structure
 
 ```text
@@ -141,7 +163,7 @@ Urban-Microclimate-Modelling/
 │   ├── S06_case_models/            case-level models (S06a first run, S06c comparison)
 │   ├── S06b_feature_selection_AS/  feature selection and PCA study
 │   ├── S07_pixel_model/            pixel-level model and diagnostics
-│   └── S09_phase1_evaluation/      one-time scoring of the frozen test set
+│   └── S09_phase1_evaluation/      scoring of the frozen test set
 ├── results/                        experiment log (runs.csv; runs_v1.csv is the log before the metric columns were corrected); predictions are not tracked
 ├── .github/workflows/              lint and tests on every pull request
 ├── pyproject.toml, uv.lock         pinned environment
@@ -154,7 +176,7 @@ Each stage folder contains its scripts or notebooks, a stage summary and the out
 
 This project builds on the UrbanTALES dataset:
 
-> Nazarian, N., Lu, J., Lipson, M., Hart, M. A., Liu, S., Krayenhoff, E. S., Blunn, L., and Martilli, A. (2025). UrbanTALES: A Large-Eddy Simulation Dataset for Urban Canopy Layer Turbulence and Parameterization. *Bulletin of the American Meteorological Society*, 106(12). https://doi.org/10.1175/BAMS-D-25-0061.1
+> Nazarian, N., Lu, J., Lipson, M., Hart, M. A., Liu, S., Krayenhoff, E. S., Blunn, L., and Martilli, A. (2025). UrbanTALES: A Large-Eddy Simulation Dataset for Urban Canopy Layer Turbulence and Parameterization. *Bulletin of the American Meteorological Society*, 106(12), E2461–E2478. https://doi.org/10.1175/BAMS-D-25-0061.1
 
 Related work:
 
