@@ -72,7 +72,7 @@ flowchart LR
 
 ## Phase 1 results
 
-All development numbers are out-of-fold scores on 482 development cases. Each fold holds out whole cities and layout families (93 groups), and hyperparameters are chosen in an inner grouped loop. The numbers below follow the pipeline audit of 27 October 2026, which corrected the features, the targets and the development groups.
+The full write-up is the [Phase 1 report](reports/Phase1_Report.pdf), and [`reports/references.md`](reports/references.md) lists the papers it builds on. All development numbers are out-of-fold scores on 482 development cases. Each fold holds out whole cities and layout families (93 groups), and hyperparameters are chosen in an inner grouped loop. The numbers below follow the pipeline audit of 27 October 2026, which corrected the features, the targets and the development groups.
 
 ### Case level: mean wind of a neighbourhood
 
@@ -164,6 +164,7 @@ Urban-Microclimate-Modelling/
 │   ├── S06b_feature_selection_AS/  feature selection and PCA study
 │   ├── S07_pixel_model/            pixel-level model and diagnostics
 │   └── S09_phase1_evaluation/      scoring of the frozen test set
+├── reports/                        Phase 1 report (PDF) and key references
 ├── results/                        experiment log (runs.csv; runs_v1.csv is the log before the metric columns were corrected); predictions are not tracked
 ├── .github/workflows/              lint and tests on every pull request
 ├── pyproject.toml, uv.lock         pinned environment
