@@ -166,18 +166,25 @@ def test_idealized_realistic_subset_breakdown():
     assert math.isclose(subsets["realistic"]["mae"], exp_real["mae"], rel_tol=1e-6)
 
 
-def test_spatial_evaluation_unequal_valid_cells_case_weighted():
-    """Test 8: Spatial evaluation aggregates cases with equal weight (case-weighted)."""
-    # Case A: 10 valid cells, error = 1.0 everywhere -> MAE = 1.0
-    case_a = case_metrics(y_true=np.zeros(10), y_pred=np.ones(10), case="A")
-    # Case B: 100 valid cells, error = 2.0 everywhere -> MAE = 2.0
-    case_b = case_metrics(y_true=np.zeros(100), y_pred=np.full(100, 2.0), case="B")
-
-    pooled = pooled_metrics([case_a, case_b])
-    # Case-weighted mean of MAE = (1.0 + 2.0) / 2 = 1.5
-    # Cell-weighted mean would be (10*1.0 + 100*2.0) / 110 = 1.909
-    assert math.isclose(pooled["pooled_mae"], 1.5, rel_tol=1e-6)
+def test_spatial_pooled_metrics_pool_every_cell():
+    """Test 8: field-mode pooled metrics use every open cell once; per-case R² is summarised separately."""
+    rng = np.random.default_rng(0)
+    ya, yb = rng.normal(1.0, 0.3, 10), rng.normal(3.0, 0.5, 100)
+    pa, pb = ya + 1.0, yb + rng.normal(0.0, 0.2, 100)
+    pooled = pooled_metrics([case_metrics(ya, pa, case="A"), case_metrics(yb, pb, case="B")])
+    y, p = np.concatenate([ya, yb]), np.concatenate([pa, pb])
+    assert math.isclose(pooled["pooled_mae"], float(np.mean(np.abs(p - y))), rel_tol=1e-9)
+    assert math.isclose(pooled["pooled_rmse"], float(np.sqrt(np.mean((p - y) ** 2))), rel_tol=1e-9)
+    assert math.isclose(pooled["pooled_r2"], float(1 - ((y - p) ** 2).sum() / ((y - y.mean()) ** 2).sum()), rel_tol=1e-9)
+    per_case = [case_metrics(ya, pa)["r2"], case_metrics(yb, pb)["r2"]]
+    assert math.isclose(pooled["mean_case_r2"], float(np.mean(per_case)), rel_tol=1e-9)
     assert pooled["n_cases"] == 2
+
+
+def test_case_metrics_refuses_unmasked_nan():
+    """A NaN outside the mask must not silently drop a case from the pooled scores."""
+    with pytest.raises(ValueError):
+        case_metrics(np.array([1.0, np.nan, 2.0]), np.array([1.0, 1.0, 1.0]), case="A")
 
 
 def test_empty_valid_cell_mask_no_crash():

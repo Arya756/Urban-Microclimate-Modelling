@@ -245,7 +245,9 @@ def generate_plots(output_dir: pathlib.Path) -> None:
     x_pos = np.arange(len(methods))
     bars = ax.bar(x_pos, means, yerr=stds, capsize=4, color=colors, alpha=0.88, edgecolor="#222222", width=0.65)
     ax.axhline(baseline_r2, color="#c0392b", linestyle="--", linewidth=1.8, label=f"Baseline 34 Features (R² = {baseline_r2:.4f})")
-    ax.axhline(0.671, color="#f39c12", linestyle=":", linewidth=1.5, label="B1 Baseline Reference (0.671)")
+    s06c = pd.read_csv(pathlib.Path(__file__).resolve().parents[1] / "S06_case_models/outputs/s06c/model_comparison.csv")
+    b1_r2 = s06c.query("model == 'B1_rf_basic_untuned' and target == 'U_mean'")["r2"].item()
+    ax.axhline(b1_r2, color="#f39c12", linestyle=":", linewidth=1.5, label=f"B1 Baseline Reference ({b1_r2:.3f})")
 
     ax.set_xticks(x_pos)
     ax.set_xticklabels(methods, rotation=35, ha="right", fontsize=9)
@@ -278,7 +280,7 @@ def generate_plots(output_dir: pathlib.Path) -> None:
 
     ax.set_xticks(x_pos)
     ax.set_xticklabels(methods, rotation=35, ha="right", fontsize=9)
-    ax.set_ylabel("Error Metric Value (m/s)", fontweight="bold")
+    ax.set_ylabel("Error Metric Value (U/u*)", fontweight="bold")
     ax.set_title("S06b: Error Comparison (MAE & RMSE) Across Methods", fontweight="bold", pad=12)
     ax.grid(axis="y", linestyle="--", alpha=0.6)
     ax.legend(loc="upper right", framealpha=0.95)

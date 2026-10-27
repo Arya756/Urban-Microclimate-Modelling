@@ -61,7 +61,7 @@ CASE_FEATURES = ["lambda_p", "mean_h", "std_h", "max_h", "lambda_f_dir", "subset
 DROP_CHANNELS = ("building_height", "fluid_mask")  # constant on open ground
 PARAMS = {"n_estimators": 800, "learning_rate": 0.05, "num_leaves": 127, "min_child_samples": 100,
           "subsample": 0.8, "subsample_freq": 1, "colsample_bytree": 0.8, "reg_lambda": 1.0,
-          "random_state": SEED, "n_jobs": 10, "verbosity": -1}
+          "random_state": SEED, "n_jobs": 10, "verbosity": -1, "deterministic": True, "force_row_wise": True}
 EXTRA_FEATURES = ["shelter_ratio", "upwind_fetch_minus30", "upwind_fetch_plus30", "upwind_fetch_over_h"]
 BAND_MID_M = {"upwind_h_1_10m": 5.5, "upwind_h_11_30m": 20.5, "upwind_h_31_60m": 45.5}
 VARIANTS = ["pixel_gbm_s05", "pixel_gbm", "hybrid_gbm", "level_s06c", "level_oracle"]
@@ -75,8 +75,11 @@ def dev_cases() -> pd.DataFrame:
     feats["outer_fold"] = feats["split_group"].map(splits["folds"]).astype(int)
     feats["subset_idealized"] = (feats["subset"] == "idealized").astype(float)
     oof = pd.read_csv(S06C_OOF).query("features == 'full' and target == 'U_mean'")
+    # the level comes from the tuned case-level model with the highest out-of-fold R² (S06c also explains it
+    # with SHAP); S09 reads the same choice from run_info.json
+    tuned = oof[oof["model"].isin(["ridge", "knn", "svr", "gaussian_process", "random_forest", "xgboost", "lightgbm"])]
     r2 = {m: 1 - ((g.y_true - g.y_pred) ** 2).sum() / ((g.y_true - g.y_true.mean()) ** 2).sum()
-          for m, g in oof.groupby("model")}
+          for m, g in tuned.groupby("model")}
     best = max(r2, key=r2.get)
     level = oof[oof["model"] == best].set_index("case")["y_pred"].rename("U_mean_s06c")
     print(f"level model from S06c: {best}")
@@ -234,7 +237,8 @@ def plot_error_vs_distance(df: pd.DataFrame) -> pd.DataFrame:
     counts = np.zeros(len(bins) - 1)
     for _, row in df[df["subset"] == "realistic"].iterrows():
         Xc, yc, valid, names, _ = case_pixels(row["case"], row)
-        which = np.digitize(Xc[:, names.index("dist_to_building")], bins) - 1
+        # right-closed bins: the first open cell of a 1 m grid lies at exactly 1 m
+        which = np.digitize(Xc[:, names.index("dist_to_building")], bins, right=True) - 1
         counts += np.bincount(which, minlength=len(bins) - 1)
         for v in sums:
             err = np.abs(np.load(PREDS / f"s07_{v}" / f"{row['case']}.npz")["y_pred"][valid] - yc)

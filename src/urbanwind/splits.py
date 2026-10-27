@@ -50,7 +50,7 @@ def _verify_hash(data: dict, path: pathlib.Path) -> None:
     stored = data.get("hash", "")
     payload = {k: v for k, v in data.items() if k != "hash"}
     recomputed = _sha256(payload)
-    if stored and stored != recomputed:
+    if stored != recomputed:
         raise ValueError(
             f"splits.json hash mismatch!\n"
             f"  stored   : {stored}\n"
@@ -99,6 +99,9 @@ def get_fold_cases(
         raise ValueError(f"fold_k must be in 0..{n_folds-1}, got {fold_k}")
     folds: dict[str, int] = splits["folds"]          # group → k (0-indexed val fold)
     dev_cases = get_dev_cases(splits, all_cases, case_to_group)
+    unknown = sorted({case_to_group.get(c, "") for c in dev_cases} - set(folds))
+    if unknown:  # a renamed or unlisted case would otherwise land in every training fold
+        raise ValueError(f"development groups without a fold: {unknown[:5]}")
 
     val_cases = [c for c in dev_cases if folds.get(case_to_group.get(c, ""), -1) == fold_k]
     train_cases = [c for c in dev_cases if c not in set(val_cases)]

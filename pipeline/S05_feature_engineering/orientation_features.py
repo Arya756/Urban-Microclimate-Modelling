@@ -97,11 +97,15 @@ def compute_directional_morphology(
     # Projected frontal area index along wind vector (Grimmond & Oke 1999)
     lambda_f_dir = float(abs(cos_t) * lambda_f_x + abs(sin_t) * lambda_f_y)
 
-    # Windward wall share (fraction of total vertical facades exposed to incoming flow)
-    windward_wall_share = float(lambda_f_dir / lambda_w) if lambda_w > 1e-7 else 0.0
+    # Windward wall share (fraction of total vertical facades exposed to incoming flow):
+    # real wall area, not projected, so an oblique wind sees both facing sets of walls
+    windward_area = lambda_f_x * (abs(cos_t) > 1e-9) + lambda_f_y * (abs(sin_t) > 1e-9)
+    windward_wall_share = float(windward_area / lambda_w) if lambda_w > 1e-7 else 0.0
 
     # Facet orientation analysis via perimeter gradients
-    bldg_mask = (H > 0.0).astype(float)
+    # At a fixed 1 m resolution: corner pixels would otherwise weigh more on coarser grids
+    step = max(1, round(1.0 / dx))
+    bldg_mask = (H[::step, ::step] > 0.0).astype(float)
     if np.any(bldg_mask > 0):
         # Sobel gradients with periodic wrapping
         grad_y = ndimage.sobel(bldg_mask, axis=0, mode="wrap")
@@ -113,10 +117,10 @@ def compute_directional_morphology(
             angles_rad = np.arctan2(grad_y[edge_mask], grad_x[edge_mask])
             angles_deg = (np.degrees(angles_rad) % 180.0)  # fold to [0, 180) for facet lines
 
-            # 18 bins of 10 degrees across [0, 180)
-            hist, bin_edges = np.histogram(angles_deg, bins=18, range=(0.0, 180.0), density=True)
+            # 18 bins of 10 degrees centred on 0, 10, ..., 170 so that grid-aligned facets read 0 and 90
+            hist, _ = np.histogram((angles_deg + 5.0) % 180.0, bins=18, range=(0.0, 180.0), density=True)
             dominant_bin = int(np.argmax(hist))
-            dominant_facet_angle_deg = float(0.5 * (bin_edges[dominant_bin] + bin_edges[dominant_bin + 1]))
+            dominant_facet_angle_deg = float(10.0 * dominant_bin)
 
             # Shannon entropy of facet orientation distribution
             probs = hist / np.sum(hist) if np.sum(hist) > 0 else np.zeros_like(hist)

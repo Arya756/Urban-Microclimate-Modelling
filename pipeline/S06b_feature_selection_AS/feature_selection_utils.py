@@ -237,6 +237,8 @@ def run_rfecv(
         random_state=random_state,
         n_jobs=-1,
         verbosity=-1,
+        deterministic=True,
+        force_row_wise=True,
     )
     cv = GroupKFold(n_splits=n_inner_splits)
     rfecv = RFECV(
@@ -312,6 +314,8 @@ def train_and_eval_lgbm(
         random_state=random_state,
         n_jobs=-1,
         verbosity=-1,
+        deterministic=True,
+        force_row_wise=True,
     )
     t0 = time.time()
     m.fit(X_tr, y_tr)

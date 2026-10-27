@@ -160,21 +160,19 @@ def compute_directional_fetch_maps(
     left_map = _trace_periodic_ray_fetch(bldg_mask, vx_left, vy_left, dx, dy, lateral_cap_m, step_size)
     right_map = _trace_periodic_ray_fetch(bldg_mask, vx_right, vy_right, dx, dy, lateral_cap_m, step_size)
 
-    # Upwind building height within distance bands [1-10m, 11-30m, 31-60m]
+    # Upwind building height within distance bands (0, 10], (10, 30] and (30, 60] m, sampled
+    # one grid step apart from each lower edge so that 0.5 m grids leave no gaps between bands
     bands = (
-        ("upwind_h_1_10m", 1.0, 10.0),
-        ("upwind_h_11_30m", 11.0, 30.0),
-        ("upwind_h_31_60m", 31.0, 60.0),
+        ("upwind_h_1_10m", 0.0, 10.0),
+        ("upwind_h_11_30m", 10.0, 30.0),
+        ("upwind_h_31_60m", 30.0, 60.0),
     )
     band_height_maps = {}
 
-    for b_idx, (b_name, d_min, d_max) in enumerate(bands, start=1):
+    for b_idx, (b_name, d_lo, d_max) in enumerate(bands, start=1):
         band_max_h = np.zeros_like(H, dtype=np.float32)
-        n_band_steps = max(1, int(math.ceil((d_max - d_min) / step_size)))
-        for s in range(n_band_steps + 1):
-            d = d_min + s * step_size
-            if d > d_max:
-                break
+        for s in range(1, int(round((d_max - d_lo) / step_size)) + 1):
+            d = d_lo + s * step_size
             sx = int(round((d * vx_up) / dx))
             sy = int(round((d * vy_up) / dy))
             h_shifted = np.roll(H, shift=(-sy, -sx), axis=(0, 1))

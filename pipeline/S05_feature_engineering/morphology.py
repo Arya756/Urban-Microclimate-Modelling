@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from typing import Any, Dict
 import numpy as np
 from scipy import ndimage, stats
+from scipy.sparse import coo_matrix
+from scipy.sparse.csgraph import connected_components
 
 
 @dataclass(frozen=True)
@@ -69,6 +71,29 @@ class MorphologyFeatures:
             "max_footprint_area_m2": self.max_footprint_area_m2,
             "gamma_h": self.gamma_h,
         }
+
+
+def periodic_labels(mask: np.ndarray) -> tuple[np.ndarray, int]:
+    """8-connected components on a doubly periodic grid.
+
+    ndimage.label treats the domain edges as walls, so a building crossing an edge
+    would count as two (or four) buildings; labels touching across opposite edges are merged.
+    """
+    labels, n = ndimage.label(mask, structure=np.ones((3, 3), dtype=int))
+    if n == 0:
+        return labels, 0
+    pairs = []
+    for a, b in ((labels[0, :], labels[-1, :]), (labels[:, 0], labels[:, -1])):
+        for shift in (-1, 0, 1):  # diagonal neighbours across the edge, including the corners
+            b_shifted = np.roll(b, shift)
+            touch = (a > 0) & (b_shifted > 0)
+            pairs.append(np.stack([a[touch], b_shifted[touch]], axis=1))
+    edges = np.concatenate(pairs) - 1
+    graph = coo_matrix((np.ones(len(edges)), (edges[:, 0], edges[:, 1])), shape=(n, n))
+    n_merged, merged = connected_components(graph, directed=False)
+    out = np.zeros_like(labels)
+    out[labels > 0] = merged[labels[labels > 0] - 1] + 1
+    return out, int(n_merged)
 
 
 def compute_morphology_features(
@@ -142,8 +167,7 @@ def compute_morphology_features(
     # Connected Components (Raster Building Patches)
     # Using 8-connectivity to identify contiguous building footprints
     if n_bldg_cells > 0:
-        structure = np.ones((3, 3), dtype=int)
-        labeled_array, num_features = ndimage.label(bldg_mask, structure=structure)
+        labeled_array, num_features = periodic_labels(bldg_mask)
         n_connected = int(num_features)
 
         # Component area distribution

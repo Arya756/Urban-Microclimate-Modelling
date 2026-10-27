@@ -1,13 +1,13 @@
 model,setting,subset,n_cases,median_per_case_r2,pooled_r2
-fixed setting,"random 80/20 split, held-out cases",idealized,35,0.4378,0.4478
-fixed setting,"random 80/20 split, held-out cases",realistic,61,0.2583,0.4478
-fixed setting,training cases (in-sample),idealized,14,0.7814,0.6579
-fixed setting,training cases (in-sample),realistic,26,0.3712,0.6579
-high capacity,"random 80/20 split, held-out cases",idealized,35,0.4626,0.4566
-high capacity,"random 80/20 split, held-out cases",realistic,61,0.2527,0.4566
-high capacity,training cases (in-sample),idealized,14,0.8618,0.7510
-high capacity,training cases (in-sample),realistic,26,0.5885,0.7510
-fixed setting,"random 80/20 split, held-out cases",all,96,0.3168,0.4478
-fixed setting,training cases (in-sample),all,40,0.5165,0.6579
-high capacity,"random 80/20 split, held-out cases",all,96,0.3354,0.4566
-high capacity,training cases (in-sample),all,40,0.6774,0.7510
+fixed setting,"random 80/20 split, held-out cases",idealized,35,0.4265,0.8831
+fixed setting,"random 80/20 split, held-out cases",realistic,61,0.2638,0.3767
+fixed setting,training cases (in-sample),idealized,14,0.7827,0.9013
+fixed setting,training cases (in-sample),realistic,26,0.3733,0.5629
+high capacity,"random 80/20 split, held-out cases",idealized,35,0.4745,0.9081
+high capacity,"random 80/20 split, held-out cases",realistic,61,0.2565,0.3808
+high capacity,training cases (in-sample),idealized,14,0.8617,0.9414
+high capacity,training cases (in-sample),realistic,26,0.5858,0.6763
+fixed setting,"random 80/20 split, held-out cases",all,96,0.3172,0.4504
+fixed setting,training cases (in-sample),all,40,0.4924,0.6578
+high capacity,"random 80/20 split, held-out cases",all,96,0.3361,0.4574
+high capacity,training cases (in-sample),all,40,0.6833,0.7500

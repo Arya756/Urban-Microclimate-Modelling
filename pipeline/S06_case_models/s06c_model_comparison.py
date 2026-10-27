@@ -148,7 +148,8 @@ MODELS = {
                 lambda t: {**_boosting_space(t),
                            "max_depth": t.suggest_int("max_depth", 2, 8),
                            "min_child_weight": t.suggest_int("min_leaf", 1, 40, log=True)}),
-    "lightgbm": (lambda p: lgb.LGBMRegressor(random_state=SEED, n_jobs=1, verbosity=-1, subsample_freq=1, **p),
+    "lightgbm": (lambda p: lgb.LGBMRegressor(random_state=SEED, n_jobs=1, verbosity=-1, subsample_freq=1,
+                                                 deterministic=True, force_row_wise=True, **p),
                  lambda t: {**_boosting_space(t),
                             "max_depth": t.suggest_int("max_depth", 2, 8),
                             "num_leaves": t.suggest_int("num_leaves", 4, 64, log=True),
@@ -254,7 +255,7 @@ def summarise(df: pd.DataFrame, target: str, model: str, oof: np.ndarray, label:
     keep = ~df["flagged"].to_numpy()
     row["r2_without_flagged"] = r2(y[keep], oof[keep])
     fold_r2 = [r2(y[df["outer_fold"] == k], oof[df["outer_fold"] == k]) for k in sorted(df["outer_fold"].unique())]
-    row["fold_r2_mean"], row["fold_r2_std"] = float(np.mean(fold_r2)), float(np.std(fold_r2))
+    row["fold_r2_mean"], row["fold_r2_std"] = float(np.mean(fold_r2)), float(np.std(fold_r2, ddof=1))
     return row
 
 
@@ -456,7 +457,8 @@ def main(n_trials: int) -> None:
         model = build("lightgbm", DEFAULTS["lightgbm"], len(FULL)).fit(df.loc[tr, FULL], df.loc[tr, "U_mean"])
         trans_rows.append({"train": train, "test": test,
                            "r2_transfer": r2(df.loc[te, "U_mean"], model.predict(df.loc[te, FULL])),
-                           "r2_within_subset_cv": table.query("model == 'lightgbm' and features == 'full' and "
+                           # the same untuned LightGBM, scored within cross-validation, as the like-for-like reference
+                           "r2_within_subset_cv": table.query("model == 'lightgbm_default' and features == 'full' and "
                                                               "target == 'U_mean'")[f"r2_{test}"].item()})
     pd.DataFrame(trans_rows).to_csv(OUT / "transfer.csv", index=False, float_format="%.4f")
 
@@ -472,7 +474,7 @@ def main(n_trials: int) -> None:
             boot_rows.append({"target": target, "model_a": a, "model_b": b, **group_bootstrap(df, target, pa, pb)})
     pd.DataFrame(boot_rows).to_csv(OUT / "bootstrap_r2_differences.csv", index=False, float_format="%.4f")
 
-    # 7. SHAP for the better of XGBoost and LightGBM on U_mean
+    # 7. SHAP for the better boosting model on the development folds (also the level model of S07 and S09)
     best = max(("xgboost", "lightgbm"), key=lambda m: r2(df["U_mean"], oof[(m, "full", "U_mean")]))
     importance = shap_on_held_out(df, FULL, xgb_models if best == "xgboost" else lgbm_models)
     importance.insert(0, "model", best)

@@ -19,7 +19,7 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 import pandas as pd
 
-from urbanwind.data import EXCLUDE, load_topo
+from urbanwind.data import EXCLUDE, case_path, case_table, load_topo, parse_p3d
 
 if __package__ is None or __package__ == "":
     repo_root = pathlib.Path(__file__).resolve().parents[2]
@@ -29,14 +29,12 @@ if __package__ is None or __package__ == "":
     from pipeline.S05_feature_engineering.feature_assembly import (
         assemble_case_features,
         assemble_pixel_feature_tensor,
-        load_normalized_target,
     )
 else:
     from .config import DEFAULT_CONFIG, FeatureConfig
     from .feature_assembly import (
         assemble_case_features,
         assemble_pixel_feature_tensor,
-        load_normalized_target,
     )
 
 
@@ -323,8 +321,8 @@ def process_single_case(
 
     # The shared loader flips the top-row-first _topo raster onto the _ped.nc row order.
     H = load_topo(case_id, cfg.raw_data_dir)
-    subset = meta.get("subset", "idealized")
-    dx = 0.5 if subset == "idealized" else 1.0
+    # Grid spacing from the run's p3d file: five realistic cases use 0.5 m, not 1 m.
+    _, dx = parse_p3d(case_path(case_id, "p3d", cfg.raw_data_dir).read_text())
     dy = dx
 
     # Wind direction: use authoritative physical forcing direction from S04
@@ -361,16 +359,8 @@ def process_single_case(
             "u_tau": np.array([u_tau], dtype=np.float32),
         }
 
-        # Separately load target wind field if available (never used in X)
-        ped_path = cfg.raw_data_dir / case_id / f"{case_id}_ped.nc"
-        if ped_path.exists():
-            try:
-                Y, tke_norm, valid_mask = load_normalized_target(ped_path, u_tau=u_tau, topo_H=H)
-                save_dict["Y"] = Y
-                save_dict["TKE_norm"] = tke_norm
-                save_dict["valid_mask"] = valid_mask
-            except Exception as e:
-                logger.warning(f"Could not load target for {case_id}: {e}")
+        # Targets are not stored here: they come from urbanwind.data.load_case, which also
+        # keeps the frozen test cases closed outside S09.
 
         # Save compressed NPZ
         np.savez_compressed(out_pixel_path, **save_dict)
@@ -394,6 +384,8 @@ def run_pipeline(
         raise FileNotFoundError(f"Master case table not found: {cfg.master_case_table_path}")
 
     master_df = pd.read_csv(cfg.master_case_table_path).set_index("case", drop=False)
+    # Groups come from the catalog, which the S03 regrouping keeps current
+    master_df["split_group"] = case_table()["split_group"].reindex(master_df.index)
 
     # Filter cases
     if cases:

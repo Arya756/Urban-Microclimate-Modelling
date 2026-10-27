@@ -1,5 +1,5 @@
 model,r2_random_kfold,r2_grouped
-ridge,0.3823,-0.0706
-knn,0.3388,0.3255
-random_forest,0.6879,0.6610
-lightgbm,0.7361,0.6983
+ridge,0.4088,-0.1999
+knn,0.3559,0.3161
+random_forest,0.7059,0.7027
+lightgbm,0.7489,0.7043

@@ -10,7 +10,11 @@ The prediction directory must contain one of:
   - case_preds.csv  (case-level predictions: columns case, target, y_true, y_pred)
   - {case}.npz      (field predictions; loaded on demand)
 
-Output: one row appended to results/runs.csv with all pooled metrics.
+Output: one row appended to results/runs.csv. "pooled" metrics pool every predicted
+item: cases in scalar mode, open cells of every case in field mode. Per-case R² and
+NRMSE, the level/pattern split and the peak errors are field-mode quantities and stay
+empty for scalar targets. Cases from frozen test groups are refused unless
+--final-test is given (S09, S16 only).
 """
 
 from __future__ import annotations
@@ -42,8 +46,9 @@ DEFAULT_SPLITS = REPO_ROOT / "data" / "splits.json"
 
 RUNS_HEADER = [
     "exp_id", "date", "stage", "git_sha", "split_hash",
-    "pred_dir", "n_cases",
+    "pred_dir", "mode", "target", "n_cases",
     "pooled_mae", "pooled_rmse", "pooled_r2",
+    "mean_case_r2", "median_case_r2",
     "median_nrmse", "median_corr",
     "mean_delta_p95", "mean_delta_max",
     "mean_level_err", "mean_pattern_err",
@@ -285,8 +290,7 @@ def evaluate_field_preds(pred_dir: pathlib.Path) -> list[dict]:
         case = npz_path.stem
         data = np.load(npz_path)
         if "y_pred" not in data or "y_true" not in data:
-            print(f"  [WARN] {npz_path.name}: missing y_pred or y_true – skipped")
-            continue
+            raise ValueError(f"{npz_path.name}: field predictions need y_true, y_pred and mask")
         mask = data.get("mask", None)
         m = case_metrics(
             y_true=data["y_true"],
@@ -301,6 +305,19 @@ def evaluate_field_preds(pred_dir: pathlib.Path) -> list[dict]:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+def _check_test_groups(cases, splits_path: pathlib.Path, final_test: bool) -> None:
+    """Refuse cases from frozen test groups in every mode, looked up in the catalog."""
+    from urbanwind.data import case_table
+
+    test_groups = set(json.loads(pathlib.Path(splits_path).read_text())["test_groups"])
+    groups = case_table()["split_group"].reindex(list(cases))
+    if groups.isna().any():
+        raise ValueError(f"cases not in the catalog: {list(groups[groups.isna()].index[:5])}")
+    hits = sorted(set(groups) & test_groups)
+    if hits and not final_test:
+        raise AssertionError(f"Frozen test groups in the predictions: {hits[:5]}")
+
 
 def _git_sha() -> str:
     try:
@@ -408,21 +425,22 @@ def main(argv: list[str] | None = None) -> int:
                 "pooled_mae": primary_m["mae"],
                 "pooled_rmse": primary_m["rmse"],
                 "pooled_r2": primary_m["r2"],
-                "median_nrmse": primary_m["rmse"] / primary_m["mean_true"] if primary_m["mean_true"] > 0 else float("nan"),
-                "median_corr": float("nan"),  # not applicable to scalar case models
-                "mean_delta_p95": float("nan"),
-                "mean_delta_max": float("nan"),
-                "mean_level_err": float((primary_m["mean_pred"] - primary_m["mean_true"]) ** 2),
-                "mean_pattern_err": float("nan"),
-            }
+            }  # per-case and level/pattern metrics do not exist for one number per case
+            mode, target, cases = "scalar", target_to_log, table["case"]
         else:
             per_case = eval_result
             print(f"  Mode: flattened spatial field predictions ({len(per_case)} cases)")
             pooled = pooled_metrics(per_case)
+            mode, target, cases = "field", "U", [d["case"] for d in per_case]
     else:
         per_case = evaluate_field_preds(pred_dir)
         print(f"  Mode: field predictions ({len(per_case)} cases)")
         pooled = pooled_metrics(per_case)
+        mode, target, cases = "field", "U", [d["case"] for d in per_case]
+
+    if not pooled.get("n_cases"):
+        raise ValueError(f"no scorable cases in {pred_dir}")
+    _check_test_groups(cases, args.splits, args.final_test)
 
     row = {
         "exp_id": exp_id,
@@ -431,6 +449,8 @@ def main(argv: list[str] | None = None) -> int:
         "git_sha": _git_sha(),
         "split_hash": _split_hash(args.splits),
         "pred_dir": _relative(pred_dir),
+        "mode": mode,
+        "target": target,
         "config": args.config,
         **pooled,
     }

@@ -15,27 +15,33 @@ Defines the frozen train/val/test split strategy and establishes the shared eval
 
 | File | Description |
 | --- | --- |
-| `S03_Splits_and_Evaluation.ipynb` | Stage notebook: loads case table, builds GroupKFold splits, writes `splits.json`, runs all gate tests |
+| `S03_Splits_and_Evaluation.ipynb` | Stage notebook: loads case table, builds GroupKFold splits, writes `splits.json` (version 1), runs all gate tests |
+| `regroup_dev_groups.py` | Version 2: merges development groups that are not independent and reassigns the folds; test groups unchanged |
 | `README.md` | This file |
 | `S03_gate_report.md` | Formal gate evidence |
+
+> **Do not re-run the notebook's export cells.** They rebuild `data/splits.json` from scratch (version 1 groups, new fold assignment) and start a new `results/runs.csv`, which silently changes every downstream result. The frozen splits are version 2, written by `regroup_dev_groups.py`; read them with `urbanwind.splits.load_splits`.
 
 ## Split Design
 
 ### Groups
-- **Idealized**: 112 layout families (case name without `_dNN` wind-direction suffix)
-- **Realistic**: 50 city groups (city code from case name)
+Version 1 grouped cases by the case-name prefix: idealized cases by layout family (both wind directions), realistic cases by city code. A city code is not always a city, so version 2 (`regroup_dev_groups.py`) merges development groups that are not independent:
+- one city under several codes: Melbourne (AU-MEL, AU-PRESTON and the 0.5 m copies VAL-AU-MEL), Vancouver, Tokyo, Amsterdam, Lodz, Singapore and Phoenix;
+- idealized families that differ only in height spread (`-28` and `-56`).
+
+The split_group column of `data/catalog.csv` holds the merged groups; every stage reads groups from there.
 
 ### Frozen Test Set (24 groups, ~53 cases)
 Opened **only** in S9 (Phase 1) and S16 (Phase 2). Never used for tuning.
 
 - **Realistic (7 cities)**: AU-HOB, AU-SURREYHILLS, ES-BAR, FI-MS, US-CHI, US-NEW, VAL-US-CHI
   - Stratified by density class; spans Australia, Europe (ES, FI) and North America
-- **Idealized (17 families)**: All λp = 0.1111 families (interpolation), all λp = 0.5289 families (extrapolation), plus representative families at other λp values
+- **Idealized (17 families)**: families at seven of the eight density levels; every one of those levels also occurs in development, so the idealized test cases test interpolation
+- The test groups were fixed in version 1 and keep their names and members. Two test cases come from cities that also have development cases (AU-SURREYHILLS in Melbourne, FI-MS in Helsinki), and most idealized test families have a development family with the same footprint and another height spread.
 
-### Development Set (136 groups, 482 cases)
-- GroupKFold(n=5) with fixed fold per group; seed=42
-- Fold assignments saved in `data/splits.json`
-- Note: S04g catalog contains 136 development groups partitioned across 5 folds (an earlier text mention of 119 groups was reconciled).
+### Development Set (93 groups, 482 cases)
+- GroupKFold(n=5) over cases, so the folds hold 96 or 97 cases each and every group sits in one fold
+- Fold assignments saved in `data/splits.json` (version 2; `previous_hash` records version 1)
 
 ## Evaluation Protocol
 
@@ -44,21 +50,21 @@ All results are computed via:
 python -m urbanwind.evaluate results/preds/<exp_id> --exp-id <id> --stage <Sxx>
 ```
 
-Metrics (open-ground cells only, case-weighted):
+Metrics (open-ground cells only). "Pooled" pools every predicted item: cases for case-level (scalar) predictions, every open cell of every case for field predictions. Columns that only exist for fields stay empty for scalar rows.
 | Metric | Code Key | Description |
 |---|---|---|
-| Pooled MAE | `pooled_mae` | Mean of per-case MAE values |
-| Pooled RMSE | `pooled_rmse` | Mean of per-case RMSE values |
-| Macro-averaged within-case R² | `pooled_r2` | Arithmetic mean of within-case R² values (`_nanmean("r2")`), **not** a globally pooled R² computed from global sum of squares. |
-| median nRMSE | `median_nrmse` | Median of (per-case RMSE ÷ mean target) |
-| within-case R² | `within_r2` | Pattern agreement inside a case (identical to per-case R² for flat 1D/2D arrays) |
+| Pooled MAE | `pooled_mae` | Mean absolute error over all items |
+| Pooled RMSE | `pooled_rmse` | Root mean squared error over all items |
+| Pooled R² | `pooled_r2` | One R² over all items (one sum of squares) |
+| Per-case R² | `mean_case_r2`, `median_case_r2` | Mean and median over cases of the R² inside each case (fields only) |
+| median nRMSE | `median_nrmse` | Median over cases of (per-case RMSE ÷ mean target) (fields only) |
 | Pattern correlation | `median_corr` | Median over cases of the Pearson correlation between the true and predicted open-ground fields |
 | ΔP95, Δmax | `mean_delta_p95`, `mean_delta_max` | Mean difference in 95th percentile and maximum wind speed |
 | level err, pattern err | `mean_level_err`, `mean_pattern_err` | Mean bias squared and pattern variance error decomposition |
 
 ### Baseline Predictor Notes & Recommendations
 
-- **Existing Gate Predictor (`dummy_s03_gate`):** The initial smoke test uses a **per-case mean predictor** ($\hat{y}_i = \bar{y}_i$). Because it predicts the mean of ground-truth test case targets, $\text{SS}_{\text{res}, i} = \text{SS}_{\text{tot}, i}$, mathematically forcing each case's $R^2_i = 1 - 1 = 0.0$ and yielding `pooled_r2 = 0.0000`. This validates pipeline plumbing, logging to `results/runs.csv`, and execution integrity, but **is not a valid out-of-sample baseline** because it uses ground-truth case targets (target leakage).
+- **Existing Gate Predictor (`dummy_s03_gate`):** The initial smoke test uses a **per-case mean predictor** ($\hat{y}_i = \bar{y}_i$). Because it predicts the mean of ground-truth test case targets, $\text{SS}_{\text{res}, i} = \text{SS}_{\text{tot}, i}$, mathematically forcing each case's $R^2_i = 1 - 1 = 0.0$, so `mean_case_r2 = 0` (in `results/runs_v1.csv` this column was still named `pooled_r2`). This validates pipeline plumbing, logging to `results/runs.csv`, and execution integrity, but **is not a valid out-of-sample baseline** because it uses ground-truth case targets (target leakage).
 - **Recommended Follow-up Baseline:** A true out-of-sample baseline should predict the **training-set global mean** ($\hat{y} = \bar{y}_{\text{train}}$) across all evaluation cases. Implementing this training-set global-mean baseline is recommended as a separate follow-up task; evaluation code is kept unchanged in this documentation task.
 
 ## Gate Evidence

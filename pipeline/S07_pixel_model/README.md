@@ -34,32 +34,32 @@ Predicts the pedestrian-level wind speed $U/u_*$ at every open-ground cell with 
 | --- | --- |
 | `pixel_gbm_s05` | $U/u_*$ from the 20 S05 channels and case descriptors only (ablation) |
 | `pixel_gbm` | $U/u_*$ from all 30 features |
-| `hybrid_gbm` | the pattern $U/U_\mathrm{mean}$ from all 30 features, times the S06c XGBoost out-of-fold `U_mean` |
+| `hybrid_gbm` | the pattern $U/U_\mathrm{mean}$ from all 30 features, times the out-of-fold `U_mean` of the most accurate tuned S06c model (LightGBM; `level_model` in `outputs/run_info.json`) |
 | `level_s06c` | the S06c `U_mean` on every cell |
 | `level_oracle` | the true case mean on every cell (uses the truth; the best any flat field can do) |
 
 ## Results (482 development cases, held-out folds)
 
-| Variant | Pooled $R^2$ | Pooled $R^2$ idealized | Pooled $R^2$ realistic | Median per-case $R^2$ idealized | Median per-case $R^2$ realistic | Mean MAE | Mean $\Delta P_{95}$ |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `level_oracle` | 0.310 | 0.394 | 0.297 | 0 | 0 | 0.817 | -1.75 |
-| `level_s06c` | 0.266 | 0.389 | 0.247 | -0.003 | -0.018 | 0.839 | -1.75 |
-| `pixel_gbm_s05` | 0.564 | 0.837 | 0.525 | 0.422 | 0.207 | 0.630 | -0.78 |
-| `pixel_gbm` | **0.593** | **0.880** | **0.552** | 0.457 | 0.253 | **0.607** | -0.73 |
-| `hybrid_gbm` | 0.581 | 0.867 | 0.540 | **0.478** | **0.254** | 0.614 | -0.73 |
+| Variant | Pooled $R^2$ | Pooled $R^2$ idealized | Pooled $R^2$ realistic | Median per-case $R^2$ idealized | Median per-case $R^2$ realistic | Mean MAE | Median NRMSE | Mean $\Delta P_{95}$ |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `level_oracle` | 0.311 | 0.394 | 0.298 | 0 | 0 | 0.816 | 0.549 | -1.75 |
+| `level_s06c` | 0.270 | 0.390 | 0.252 | -0.003 | -0.016 | 0.832 | 0.560 | -1.76 |
+| `pixel_gbm_s05` | 0.553 | 0.831 | 0.513 | 0.393 | 0.201 | 0.636 | 0.482 | -0.77 |
+| `pixel_gbm` | **0.591** | **0.876** | **0.550** | 0.418 | 0.247 | **0.611** | 0.468 | -0.73 |
+| `hybrid_gbm` | 0.576 | 0.866 | 0.534 | **0.431** | **0.251** | 0.615 | **0.467** | -0.76 |
 
-Pooled $R^2$ is computed over all open cells of all held-out cases, so it rewards getting each case's level right. Per-case $R^2$ is computed inside one case and then the median is taken over cases; it rewards only the pattern. All errors are in units of $u_*$.
+Pooled $R^2$ is computed over all open cells of all held-out cases, so it rewards getting each case's level right. Per-case $R^2$ is computed inside one case and then the median is taken over cases; it rewards only the pattern. NRMSE is a case's RMSE divided by its mean true speed. All errors are in units of $u_*$. Scores follow the pipeline audit of 27 October 2026.
 
 1. **Level and pattern.**
    - A flat field at the true case mean explains 31% of the pooled variance, so about two thirds of the variation at pedestrian height lies within neighbourhoods.
-   - The S06c prediction of the mean comes close to that oracle (0.266).
-2. **The pixel model adds part of the pattern.** It raises the pooled $R^2$ to 0.593 and cuts each case's mean squared error by 62% (idealized) and 31% (realistic) against the oracle flat field.
-3. **Sheltering features help.** They raise the realistic per-case $R^2$ from 0.207 to 0.253 and the idealized one from 0.422 to 0.457. Upwind fetch divided by mean height becomes the most important feature (32% of the total split gain).
-4. **The hybrid matches the direct model.** The pixel model already learns each case's level from its case descriptors (level error 0.047 against 0.069 for the S06c mean painted flat), so multiplying by the case-level prediction adds nothing.
+   - The S06c prediction of the mean comes close to that oracle (0.270).
+2. **The pixel model adds part of the pattern.** It raises the pooled $R^2$ to 0.591 and cuts each case's mean squared error by 60% (idealized) and 31% (realistic) against the oracle flat field. Its typical error is still about half of a case's mean speed (median NRMSE 0.468).
+3. **Sheltering features help.** They raise the realistic per-case $R^2$ from 0.201 to 0.247 and the idealized one from 0.393 to 0.418. Upwind fetch divided by mean height becomes the most important feature (32% of the total split gain).
+4. **The hybrid matches the direct model.** The pixel model already learns each case's level from its case descriptors (level error 0.045 against 0.052 for the S06c mean painted flat), so multiplying by the case-level prediction adds little.
 5. **Peaks are missed.**
-   - The 95th percentile is underpredicted by 0.73 $u_*$ on average, and the maximum by 2.5 $u_*$.
-   - Absolute error grows from 0.57 next to walls to 0.83 more than 32 m from them, where the fast streams run.
-6. **The worst case is a flow structure, not a bug.** The lowest per-case $R^2$ is AU-Mel-U15_d90. There the wind blows across rows of buildings, and pedestrian-level flow is a set of canyon vortices whose cross-stream velocity changes sign from one street to the next; straight-line fetch features cannot describe it. The same layout with the wind along the streets (`_d00`) also scores below the median, but far better ($R^2$ -0.08 against -0.71).
+   - The 95th percentile is underpredicted by 0.73 $u_*$ on average, and the maximum by 2.6 $u_*$.
+   - Absolute error grows from 0.64 in the cells next to walls (within 1 m) to 0.85 more than 32 m from them, where the fast streams run.
+6. **The worst case is a flow structure, not a bug.** The lowest per-case $R^2$ is AU-Mel-U15_d90. There the wind blows across rows of buildings, and pedestrian-level flow is a set of canyon vortices whose cross-stream velocity changes sign from one street to the next; straight-line fetch features cannot describe it. The same layout with the wind along the streets (`_d00`) scores far better ($R^2$ -0.10 against -0.92).
 
 ## Diagnostics: where the limit comes from
 
@@ -67,15 +67,15 @@ Pooled $R^2$ is computed over all open cells of all held-out cases, so it reward
 
 | Protocol | Model | Median per-case $R^2$, idealized | Median per-case $R^2$, realistic |
 | --- | --- | --- | --- |
-| Grouped folds (above) | fixed setting | 0.457 | 0.253 |
-| Random 80/20 case split, as in Lu et al. (2025) | fixed setting | 0.438 | 0.258 |
-| Random 80/20 case split | high capacity | 0.463 | 0.253 |
-| 40 of the model's own training cases | fixed setting | 0.781 | 0.371 |
-| 40 of the model's own training cases | high capacity | 0.862 | 0.589 |
+| Grouped folds (above) | fixed setting | 0.418 | 0.247 |
+| Random 80/20 case split, as in Lu et al. (2025) | fixed setting | 0.426 | 0.264 |
+| Random 80/20 case split | high capacity | 0.474 | 0.257 |
+| 40 of the model's own training cases (26 realistic) | fixed setting | 0.783 | 0.373 |
+| 40 of the model's own training cases (26 realistic) | high capacity | 0.862 | 0.586 |
 
-- The random split does not help (0.438 and 0.258 against 0.457 and 0.253), so the grouped protocol is not what limits the model.
-- More capacity fits the training cases better (realistic 0.371 to 0.589) but leaves the held-out score unchanged (0.258 against 0.253): the extra fit is memorisation. On one fold, eight times more training cells per case also left the score unchanged. The 30 local features, not the split, the data volume or the model capacity, limit what transfers to unseen neighbourhoods.
-- The published U-Net reports per-case $R^2$ of about 0.94 (idealized) and 0.65 (full set) under a random split, with different preprocessing. Most of that difference is therefore likely the representation: a convolutional network reads the geometry around every cell directly.
+- The random split barely helps (0.426 and 0.264 against 0.418 and 0.247), so the grouped protocol is not what limits the model.
+- More capacity fits the realistic training cases much better (0.373 to 0.586) but leaves the held-out realistic score unchanged (0.264 against 0.257): the extra fit is memorisation. The 30 local features, not the split or the model capacity, limit what transfers to unseen neighbourhoods.
+- The published U-Net reports $R^2$ of about 0.94 (idealized) and 0.65 (full set) under a random split, with different preprocessing; its aggregation over cases or cells is not stated. The same split gives a median per-case $R^2$ of 0.426 and 0.317 here, and a pooled $R^2$ of 0.450. Most of that difference is therefore likely the representation: a convolutional network reads the geometry around every cell directly.
 
 ## Figures
 

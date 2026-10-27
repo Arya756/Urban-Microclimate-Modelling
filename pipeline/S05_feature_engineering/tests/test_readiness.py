@@ -218,7 +218,7 @@ class TestRepositoryReadinessAndExclusions:
         """
         Verify that readiness checks and development folds strictly isolate frozen test cases:
         - 482 development cases
-        - 136 development spatial groups
+        - 93 development spatial groups (splits v2)
         - 53 frozen test cases (24 test groups)
         - Zero group overlap between frozen test and development folds.
         """
@@ -229,12 +229,15 @@ class TestRepositoryReadinessAndExclusions:
         test_groups = set(splits_data.get("test_groups", []))
 
         assert len(test_groups) == 24, f"Expected 24 frozen test groups, got {len(test_groups)}"
-        assert len(fold_groups) == 136, f"Expected 136 development spatial groups, got {len(fold_groups)}"
+        # splits v2 merged development groups of one city and -28/-56 idealized variants (136 -> 93)
+        assert len(fold_groups) == 93, f"Expected 93 development spatial groups, got {len(fold_groups)}"
         assert not fold_groups.intersection(test_groups), "Development groups must be disjoint from frozen test groups."
 
         # Verify mapping against master table
         if MASTER_TABLE_PATH.exists():
             master_df = pd.read_csv(MASTER_TABLE_PATH)
+            catalog = pd.read_csv(SPLITS_PATH.parent / "catalog.csv").set_index("case")
+            master_df["split_group"] = master_df["case"].map(catalog["split_group"])  # groups live in the catalog
             dev_cases = master_df[master_df["split_group"].isin(fold_groups)]
             test_cases = master_df[master_df["split_group"].isin(test_groups)]
 

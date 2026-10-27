@@ -6,21 +6,27 @@ script was written. It refits each final model on all 482 development cases and
 scores the 53 cases of the 24 frozen test groups once:
 - case level: the S06c models, each re-tuned on the development cases only with
   the same nested-search settings (Optuna, grouped inner folds);
-- field level: the S07 pixel model, the hybrid (pattern x S09 XGBoost level) and the
-  level-only references.
+- field level: the S07 pixel model, the hybrid (pattern x the S09 prediction of the level
+  model chosen in S07) and the level-only references.
 
 Two test cases come from cities that also have development neighbourhoods
 (AU-SURREYHILLS in Melbourne, FI-MS in Helsinki), so every score is also reported
 without them.
 
 The script refuses to run again once outputs/test_scored.json exists, so the test
-set cannot be used to make choices.
+set cannot be used to make choices. The guard is written before anything is scored. A
+second scoring is possible only with --rescore and a reason (for example a bug fix that
+changes no modelling choice); the guard then keeps the full scoring history.
 
-Usage: python pipeline/S09_phase1_evaluation/score_test_set.py   (about 25 minutes)
+Test-case targets are computed here, through the shared loader: S02 leaves the frozen
+test cases out of its target table.
+
+Usage: python pipeline/S09_phase1_evaluation/score_test_set.py [--rescore "reason"]   (about 25 minutes)
 """
 
 from __future__ import annotations
 
+import argparse
 import datetime
 import json
 import pathlib
@@ -36,7 +42,7 @@ REPO = pathlib.Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 from pipeline.S06_case_models import s06c_model_comparison as s06c  # noqa: E402
 from pipeline.S07_pixel_model import s07_pixel_model as s07  # noqa: E402
-from urbanwind.data import EXCLUDE  # noqa: E402
+from urbanwind.data import EXCLUDE, case_targets  # noqa: E402
 from urbanwind.metrics import case_metrics, regression_metrics  # noqa: E402
 from urbanwind.splits import load_splits  # noqa: E402
 
@@ -49,9 +55,9 @@ CASE_MODELS = ["mean", "ridge", "knn", "svr", "gaussian_process", "random_forest
 def load_test() -> pd.DataFrame:
     splits = load_splits()
     feats = pd.read_csv(s06c.FEATURES_CSV)
-    targets = pd.read_csv(s06c.TARGETS_CSV)[["case", *s06c.TARGETS]]
-    df = feats.merge(targets, on="case", how="inner")
-    df = df[~df["case"].isin(EXCLUDE) & df["split_group"].isin(splits["test_groups"])].copy()
+    df = feats[~feats["case"].isin(EXCLUDE) & feats["split_group"].isin(splits["test_groups"])].copy()
+    targets = pd.DataFrame([{"case": c, **case_targets(c)} for c in df["case"]])[["case", *s06c.TARGETS]]
+    df = df.merge(targets, on="case", how="inner")
     df["subset_idealized"] = (df["subset"] == "idealized").astype(float)
     df["shared_city"] = df["split_group"].isin(SHARED_CITY)
     return df.reset_index(drop=True)
@@ -115,7 +121,8 @@ def field_level(dev: pd.DataFrame, test: pd.DataFrame, level: pd.Series) -> pd.D
             np.savez_compressed(out / f"{row['case']}.npz", y_true=true_map, y_pred=pred_map, mask=~valid)
             rows.append({"variant": variant, "case": row["case"], "subset": row["subset"],
                          "shared_city": row["shared_city"], "n_cells": len(yc), "sum_y": yc.sum(),
-                         "sum_y2": (yc ** 2).sum(), "sse": ((yc - pred) ** 2).sum(), **case_metrics(yc, pred)})
+                         "sum_y2": (yc ** 2).sum(), "sse": ((yc - pred) ** 2).sum(),
+                         **{k: v for k, v in case_metrics(yc, pred).items() if k != "case"}})
     return pd.DataFrame(rows)
 
 
@@ -132,10 +139,23 @@ def field_summary(per_case: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def main(n_trials: int = 30) -> None:
+def write_guard(history: list[dict], status: str, **info) -> None:
+    sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, cwd=REPO).stdout.strip()
+    entry = {"date": datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds"), "git_sha": sha,
+             "status": status, **info}
+    GUARD.write_text(json.dumps({**entry, "history": history}, indent=1))
+
+
+def main(n_trials: int = 30, rescore: str | None = None) -> None:
+    history = []
     if GUARD.exists():
-        sys.exit(f"The test set was already scored ({json.loads(GUARD.read_text())['date']}); refusing to score it again.")
+        previous = json.loads(GUARD.read_text())
+        if not rescore:
+            sys.exit(f"The test set was already scored ({previous['date']}); refusing to score it again.")
+        history = [*previous.pop("history", []), previous]
     OUT.mkdir(parents=True, exist_ok=True)
+    reason = {"reason": rescore} if rescore else {}
+    write_guard(history, "started", n_trials=n_trials, **reason)  # before any score exists
     dev, test = s06c.load_dev(), load_test()
     print(f"development cases: {len(dev)}, test cases: {len(test)} ({test['subset'].value_counts().to_dict()})")
 
@@ -148,19 +168,20 @@ def main(n_trials: int = 30) -> None:
         g.drop(columns="model").to_csv(pred_dir / "case_preds.csv", index=False)
 
     test_px = test.copy()
-    level = case_preds.query("model == 'xgboost' and target == 'U_mean'").set_index("case")["y_pred"]
+    level_model = json.loads((s07.OUT / "run_info.json").read_text())["level_model"]  # chosen in S07 on development folds
+    level = case_preds[(case_preds["model"] == level_model) & (case_preds["target"] == "U_mean")].set_index("case")["y_pred"]
     dev_px = dev.copy()
     per_case = field_level(dev_px, test_px, level)
     per_case.drop(columns=["n_cells", "sum_y", "sum_y2", "sse"]).to_csv(OUT / "test_field_per_case.csv", index=False,
                                                                        float_format="%.5g")
     field_summary(per_case).to_csv(OUT / "test_field_level.csv", index=False, float_format="%.4f")
 
-    sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, cwd=REPO).stdout.strip()
-    GUARD.write_text(json.dumps({"date": datetime.datetime.now(datetime.UTC).isoformat(timespec="seconds"),
-                                 "git_sha": sha, "n_test_cases": len(test), "n_trials": n_trials}, indent=1))
+    write_guard(history, "scored", n_test_cases=len(test), n_trials=n_trials, **reason)
     print(case_table.query("target == 'U_mean' and cases == 'all'").to_string(index=False))
     print(field_summary(per_case).query("cases == 'all'").to_string(index=False))
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--rescore", help="score again after a fix that changes no modelling choice; give the reason")
+    main(rescore=parser.parse_args().rescore)

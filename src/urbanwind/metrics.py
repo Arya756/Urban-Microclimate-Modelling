@@ -37,7 +37,7 @@ def case_metrics(
 
     Returns
     -------
-    dict with keys: case, n, mae, rmse, r2, nrmse, within_r2, corr,
+    dict with keys: case, n, mean_true, var_true, mae, rmse, r2, nrmse, within_r2, corr,
                     delta_p95, delta_max, level_err, pattern_err.
     corr is the Pearson correlation of the two open-ground fields (pattern agreement).
     """
@@ -52,6 +52,8 @@ def case_metrics(
     n = len(y_true)
     if n == 0:
         return _empty_metrics(case)
+    if not (np.isfinite(y_true).all() and np.isfinite(y_pred).all()):
+        raise ValueError(f"{case}: non-finite values on unmasked cells; mask them instead")
 
     residual = y_pred - y_true
     mae = float(np.mean(np.abs(residual)))
@@ -92,6 +94,8 @@ def case_metrics(
     return {
         "case": case,
         "n": n,
+        "mean_true": mean_u,
+        "var_true": float(y_true.var()),
         "mae": mae,
         "rmse": rmse,
         "r2": r2,
@@ -108,7 +112,7 @@ def case_metrics(
 def _empty_metrics(case: str) -> dict[str, Any]:
     nan = float("nan")
     return {
-        "case": case, "n": 0, "mae": nan, "rmse": nan, "r2": nan,
+        "case": case, "n": 0, "mean_true": nan, "var_true": nan, "mae": nan, "rmse": nan, "r2": nan,
         "nrmse": nan, "within_r2": nan, "corr": nan,
         "delta_p95": nan, "delta_max": nan, "level_err": nan, "pattern_err": nan,
     }
@@ -119,11 +123,11 @@ def _empty_metrics(case: str) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def pooled_metrics(per_case: list[dict[str, Any]]) -> dict[str, Any]:
-    """Case-weighted aggregate from a list of case_metrics dicts.
+    """Aggregate a list of case_metrics dicts.
 
-    Returns a dict with prefixed keys: pooled_mae, pooled_rmse, pooled_r2,
-    median_nrmse, median_corr, mean_delta_p95, mean_delta_max,
-    mean_level_err, mean_pattern_err, n_cases.
+    pooled_mae, pooled_rmse and pooled_r2 pool every open cell of every case
+    (one sum of squares over all cells); mean_case_r2 and median_case_r2 summarise
+    the per-case R²; the remaining keys are medians or means over cases.
     """
     valid = [d for d in per_case if d["n"] > 0]
     n_cases = len(valid)
@@ -138,11 +142,18 @@ def pooled_metrics(per_case: list[dict[str, Any]]) -> dict[str, Any]:
         vals = [d[key] for d in valid if not _is_nan(d[key])]
         return float(np.median(vals)) if vals else float("nan")
 
+    n = np.array([d["n"] for d in valid], dtype=float)
+    mean = np.array([d["mean_true"] for d in valid])
+    sse = n * np.array([d["rmse"] for d in valid]) ** 2
+    grand = (n * mean).sum() / n.sum()
+    sst = (n * np.array([d["var_true"] for d in valid])).sum() + (n * (mean - grand) ** 2).sum()
     return {
         "n_cases": n_cases,
-        "pooled_mae": _nanmean("mae"),
-        "pooled_rmse": _nanmean("rmse"),
-        "pooled_r2": _nanmean("r2"),
+        "pooled_mae": float((n * np.array([d["mae"] for d in valid])).sum() / n.sum()),
+        "pooled_rmse": float(np.sqrt(sse.sum() / n.sum())),
+        "pooled_r2": float(1.0 - sse.sum() / sst) if sst > 0 else float("nan"),
+        "mean_case_r2": _nanmean("r2"),
+        "median_case_r2": _nanmedian("r2"),
         "median_nrmse": _nanmedian("nrmse"),
         "median_corr": _nanmedian("corr"),
         "mean_delta_p95": _nanmean("delta_p95"),
