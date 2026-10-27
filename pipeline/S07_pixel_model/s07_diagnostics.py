@@ -31,14 +31,16 @@ def per_case_r2(y: np.ndarray, p: np.ndarray) -> float:
 
 
 def score(model, df: pd.DataFrame, full: dict, cases: set, label: dict) -> list[dict]:
-    rows, acc = [], np.zeros(4)
+    rows, acc = [], {}
     for i in sorted(cases):
         X, y = full[i]
         p = model.predict(X)
-        rows.append({**label, "case": df.loc[i, "case"], "subset": df.loc[i, "subset"], "per_case_r2": per_case_r2(y, p)})
-        acc += [len(y), y.sum(), (y ** 2).sum(), ((y - p) ** 2).sum()]
-    pooled = 1 - acc[3] / (acc[2] - acc[1] ** 2 / acc[0])
-    rows.append({**label, "case": "ALL (pooled R²)", "subset": "all", "per_case_r2": pooled})
+        subset = df.loc[i, "subset"]
+        rows.append({**label, "case": df.loc[i, "case"], "subset": subset, "per_case_r2": per_case_r2(y, p)})
+        for key in (subset, "all"):  # pooled sums per subset and over all cases
+            acc[key] = acc.get(key, np.zeros(4)) + [len(y), y.sum(), (y ** 2).sum(), ((y - p) ** 2).sum()]
+    for key, (n, s, ss, sse) in acc.items():
+        rows.append({**label, "case": "ALL (pooled R²)", "subset": key, "per_case_r2": 1 - sse / (ss - s * s / n)})
     return rows
 
 
@@ -69,8 +71,9 @@ def main() -> None:
     keys = ["model", "setting"]
     summary = cases.groupby([*keys, "subset"])["per_case_r2"].agg(["count", "median"]).reset_index()
     overall = cases.groupby(keys)["per_case_r2"].agg(["count", "median"]).reset_index().assign(subset="all")
-    pooled = out[out["case"] == "ALL (pooled R²)"][[*keys, "per_case_r2"]].rename(columns={"per_case_r2": "pooled_r2"})
-    summary = pd.concat([summary, overall]).merge(pooled, on=keys).rename(
+    pooled = out[out["case"] == "ALL (pooled R²)"][[*keys, "subset", "per_case_r2"]].rename(
+        columns={"per_case_r2": "pooled_r2"})
+    summary = pd.concat([summary, overall]).merge(pooled, on=[*keys, "subset"]).rename(
         columns={"count": "n_cases", "median": "median_per_case_r2"})
     summary.to_csv(OUT / "diagnostics_summary.csv", index=False, float_format="%.4f")
     print(summary.to_string(index=False))

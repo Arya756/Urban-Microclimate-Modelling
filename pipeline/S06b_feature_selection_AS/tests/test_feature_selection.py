@@ -126,16 +126,10 @@ def test_pca_train_fit_only():
 
 
 def test_baseline_reproduction_exact_match():
-    """Verify that our evaluation harness reproduces the S06 ablation baseline score.
+    """Verify that the evaluation harness reproduces the baseline row of outputs/comparison.csv.
 
-    Reference values updated after the S05 corrections (topography orientation fix, valid
-    target-cell mask, and Kanda aerodynamic parameter corrections) regenerated
-    case_features.csv. Directional features (upwind fetch, lambda_f_dir) changed due to
-    the corrected np.flipud(H) orientation, shifting the cross-validated baseline by ~0.0015 R².
-    The updated reference is stable and reproducible from the corrected feature table.
-
-    Pre-fix reference  (case_features.csv 2026-10-25): mean_r2 = 0.8217, std_r2 = 0.0552
-    Corrected reference (2026-10-27): mean_r2 = 0.8170, std_r2 = 0.0627
+    Comparing with the committed table, rather than a fixed number, keeps the test valid when
+    the upstream targets, features or splits are regenerated and this stage is rerun.
     """
     full_df, physics_features = load_dataset(REPO_ROOT)
     folds = full_df["fold"].values.astype(int)
@@ -155,10 +149,11 @@ def test_baseline_reproduction_exact_match():
     mean_r2 = float(np.mean(fold_r2s))
     std_r2 = float(np.std(fold_r2s, ddof=0))
 
-    # Reference: corrected targets (U/u_tau, raster mask) and features (orientation, mask, Kanda), 2026-10-27.
+    ref = pd.read_csv(REPO_ROOT / "pipeline/S06b_feature_selection_AS/outputs/comparison.csv").set_index("method")
+    ref = ref.loc["Baseline (34 features)"]
     # LightGBM results shift slightly between library versions, hence the 1e-3 tolerance.
-    assert abs(mean_r2 - 0.816954) < 1e-3, f"Baseline mean R2 mismatch: {mean_r2} vs 0.8170"
-    assert abs(std_r2 - 0.062683) < 1e-3, f"Baseline std R2 mismatch: {std_r2} vs 0.0627"
+    assert abs(mean_r2 - ref["mean_r2"]) < 1e-3, f"Baseline mean R2 mismatch: {mean_r2} vs {ref['mean_r2']}"
+    assert abs(std_r2 - ref["std_r2"]) < 1e-3, f"Baseline std R2 mismatch: {std_r2} vs {ref['std_r2']}"
 
 
 def test_subset_drops_constant_feature():

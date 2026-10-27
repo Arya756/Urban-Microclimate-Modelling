@@ -122,7 +122,8 @@ def run_nested_cv(
     """Execute leakage-safe nested cross-validation with Optuna hyperparameter tuning."""
     out_dir = output_dir or OUT_DIR
     out_dir.mkdir(parents=True, exist_ok=True)
-    PRED_DIR.mkdir(parents=True, exist_ok=True)
+    if output_dir is None:  # tests pass a temporary output_dir and must not touch results/
+        PRED_DIR.mkdir(parents=True, exist_ok=True)
 
     X_all = full_df[PHYSICS_FEATURES].fillna(0.0).values
     y_all = full_df[target_col].values
@@ -276,8 +277,9 @@ def run_nested_cv(
     })
     oof_csv_path = out_dir / "nested_oof_predictions.csv"
     oof_df.to_csv(oof_csv_path, index=False)
-    # Mirror copy in results/preds/s06_lgbm_nested_tuned_physics_v1/
-    oof_df.to_csv(PRED_DIR / "oof_preds.csv", index=False)
+    # Mirror copy in results/preds/s06_lgbm_nested_tuned_physics_v1/ (real runs only)
+    if output_dir is None:
+        oof_df.to_csv(PRED_DIR / "oof_preds.csv", index=False)
 
     # 2. Fold metrics table
     fold_df = pd.DataFrame(fold_records)
