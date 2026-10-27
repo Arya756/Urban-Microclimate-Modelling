@@ -1,21 +1,21 @@
 variant,cases,n_cases,pooled_r2,median_within_case_r2,mean_mae,mean_delta_p95,mean_level_err,mean_pattern_err
-pixel_gbm_s05,all,53,0.6389,0.3091,0.5563,-0.6643,0.0731,0.5178
-pixel_gbm_s05,idealized,34,0.8438,0.4175,0.4165,-0.5049,0.0126,0.2723
-pixel_gbm_s05,realistic,19,0.5777,0.2502,0.8065,-0.9496,0.1813,0.9571
-pixel_gbm_s05,all without shared-city cases,51,0.5747,0.3091,0.5381,-0.6914,0.0611,0.4865
-pixel_gbm,all,53,0.6760,0.3341,0.5320,-0.6283,0.0624,0.4833
-pixel_gbm,idealized,34,0.8921,0.4228,0.3900,-0.4683,0.0098,0.2401
-pixel_gbm,realistic,19,0.6115,0.2723,0.7862,-0.9147,0.1566,0.9187
-pixel_gbm,all without shared-city cases,51,0.6024,0.3341,0.5162,-0.6525,0.0586,0.4525
-hybrid_gbm,all,53,0.6647,0.3492,0.5361,-0.6092,0.0667,0.4780
-hybrid_gbm,idealized,34,0.8817,0.4466,0.3865,-0.4794,0.0042,0.2422
-hybrid_gbm,realistic,19,0.5999,0.2724,0.8040,-0.8416,0.1785,0.9001
-hybrid_gbm,all without shared-city cases,51,0.5742,0.3492,0.5220,-0.6214,0.0639,0.4494
-level_s09,all,53,0.2738,-0.0031,0.7695,-1.5293,0.0994,0.9279
-level_s09,idealized,34,0.4137,-0.0015,0.6342,-1.2888,0.0052,0.6465
-level_s09,realistic,19,0.2315,-0.0244,1.0116,-1.9598,0.2680,1.4314
-level_s09,all without shared-city cases,51,0.2177,-0.0031,0.7434,-1.5098,0.0830,0.8469
-level_oracle,all,53,0.3772,0.0000,0.7396,-1.5745,0.0000,0.9279
+pixel_gbm_s05,all,53,0.6361,0.3205,0.5567,-0.6719,0.0785,0.5146
+pixel_gbm_s05,idealized,34,0.8434,0.4215,0.4159,-0.5007,0.0119,0.2726
+pixel_gbm_s05,realistic,19,0.5741,0.2792,0.8086,-0.9782,0.1978,0.9476
+pixel_gbm_s05,all without shared-city cases,51,0.5697,0.3205,0.5384,-0.6990,0.0656,0.4848
+pixel_gbm,all,53,0.6802,0.3509,0.5305,-0.6510,0.0622,0.4814
+pixel_gbm,idealized,34,0.8928,0.4253,0.3892,-0.4807,0.0101,0.2390
+pixel_gbm,realistic,19,0.6167,0.2893,0.7832,-0.9556,0.1554,0.9151
+pixel_gbm,all without shared-city cases,51,0.6047,0.3509,0.5152,-0.6729,0.0597,0.4506
+hybrid_gbm,all,53,0.6854,0.3664,0.5320,-0.6357,0.0507,0.4766
+hybrid_gbm,idealized,34,0.8761,0.4335,0.3938,-0.4566,0.0093,0.2444
+hybrid_gbm,realistic,19,0.6284,0.3007,0.7795,-0.9562,0.1249,0.8921
+hybrid_gbm,all without shared-city cases,51,0.6108,0.3664,0.5176,-0.6482,0.0464,0.4486
+level_s09,all,53,0.2951,-0.0071,0.7680,-1.5392,0.0881,0.9266
+level_s09,idealized,34,0.4118,-0.0064,0.6410,-1.2749,0.0137,0.6465
+level_s09,realistic,19,0.2596,-0.0086,0.9955,-2.0121,0.2211,1.4278
+level_s09,all without shared-city cases,51,0.2661,-0.0069,0.7415,-1.5217,0.0680,0.8458
+level_oracle,all,53,0.3781,0.0000,0.7393,-1.5741,0.0000,0.9266
 level_oracle,idealized,34,0.4148,0.0000,0.6281,-1.2910,0.0000,0.6465
-level_oracle,realistic,19,0.3654,0.0000,0.9390,-2.0818,0.0000,1.4314
-level_oracle,all without shared-city cases,51,0.3202,0.0000,0.7146,-1.5339,0.0000,0.8469
+level_oracle,realistic,19,0.3666,0.0000,0.9382,-2.0806,0.0000,1.4278
+level_oracle,all without shared-city cases,51,0.3208,0.0000,0.7143,-1.5335,0.0000,0.8458

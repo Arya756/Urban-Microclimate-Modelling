@@ -1,6 +1,16 @@
 {
- "date": "2026-10-26T19:50:12+00:00",
- "git_sha": "a8f684d",
+ "date": "2026-10-27T11:07:26+00:00",
+ "git_sha": "b557b00",
+ "status": "scored",
  "n_test_cases": 53,
- "n_trials": 30
+ "n_trials": 30,
+ "reason": "pipeline audit of 27 Oct 2026: corrected features (grid spacing, edge-crossing buildings, orientation), targets (exact-zero cells) and development groups (splits v2); models re-tuned and re-selected on development folds only; test set unchanged and never used for a choice",
+ "history": [
+  {
+   "date": "2026-10-26T19:50:12+00:00",
+   "git_sha": "a8f684d",
+   "n_test_cases": 53,
+   "n_trials": 30
+  }
+ ]
 }
