@@ -57,7 +57,9 @@ $$\lambda_{f, y} = \frac{1}{A_{\text{total}}} \sum_{y} \sum_{x} \max\left(0, H(y
 
 ### 3. Total Wall Area Index ($\lambda_w$)
 $$\lambda_w = 2 \left(\lambda_{f, x} + \lambda_{f, y}\right)$$
-Windward wall share: $\frac{\lambda_f(\theta)}{\lambda_w}$.
+Windward wall share: the real (not projected) area of the walls facing the wind over all wall area, $\left(\lambda_{f,x}[\cos\theta \ne 0] + \lambda_{f,y}[\sin\theta \ne 0]\right)/\lambda_w$, so a cube gives 0.25 at 0° and 0.5 at 45°.
+
+Facet orientations are read from the building outline at a fixed 1 m resolution (a 0.5 m grid is sampled every second cell), in 10° bins centred on 0°, 10°, ..., 170°, so grid-aligned walls read 0° or 90°. Buildings that cross the periodic domain edge are labelled as one building (`morphology.periodic_labels`). Every length and area uses the grid spacing from the case's `_p3d` file: five realistic cases run on 0.5 m grids.
 
 ### 4. Aerodynamic Parameterizations
 #### Macdonald et al. (1998)
@@ -106,9 +108,9 @@ $$\lambda_{p, R} = \mathcal{F}^{-1}\left( \mathcal{F}(M_{\text{bldg}}) \cdot \ma
 
 ## Leakage Prevention Protocol
 
-1. **Target Isolation & Valid Masking:** Target wind speed ($Y = U(z=1.75\text{ m}) / u_\tau$) and turbulence ($TKE / u_\tau^2$) are loaded strictly through `load_normalized_target(ped_path, u_tau, topo_H=H)` into separate `'Y'` and `'TKE_norm'` arrays. The valid mask unconditionally excludes building cells (`topo_H > 0`) to prevent CFD sub-grid boundary artefacts from leaking into the target space, while preserving legitimate zero-velocity predictions on open ground.
+1. **No targets here:** S05 never opens a wind file. Targets come only from `urbanwind.data.load_case` in the modelling stages, which also keeps the frozen test cases closed outside S09.
 2. **Predictor Integrity:** Predictor feature extraction functions (`assemble_case_features`, `assemble_pixel_feature_tensor`) have zero access to simulation output fields.
-3. **Split Preservation:** Preserves `recommended_split` ('train', 'val', 'test'), `split_group`, and `fold` from `splits.json` and `model_ready_cases.csv`.
+3. **Groups:** `split_group` is taken from `data/catalog.csv`, which holds the merged groups of splits version 2.
 
 ---
 
