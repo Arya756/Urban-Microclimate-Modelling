@@ -105,11 +105,13 @@ def load_case(case: str, raw_dir: pathlib.Path = RAW_DIR) -> dict[str, Any]:
     Returns a dict with:
       H            building height [m], shape (ny, nx); 0 on open ground
       fluid        bool, True on open ground (H == 0)
-      U, u, v      wind speed and components divided by u_tau; NaN inside buildings
-      TKE          turbulent kinetic energy divided by u_tau**2; NaN inside buildings
+      U, u, v      wind speed and components divided by u_tau; NaN inside buildings and
+                   where the run stores a speed of exactly 0 (a building in the simulation)
+      TKE          turbulent kinetic energy divided by u_tau**2; NaN where U is NaN
       dx           grid spacing [m]
       wind_dir_deg forcing direction, 0 = +columns, 90 = +rows
       u_tau, subset, split_group, status
+      n_zero_speed open-ground cells left out because the run stores exactly 0 there
     """
     info = case_table().loc[case]
     if not np.isfinite(info["u_tau"]):
@@ -121,11 +123,16 @@ def load_case(case: str, raw_dir: pathlib.Path = RAW_DIR) -> dict[str, Any]:
                            "u_tau": float(info["u_tau"]), "subset": info["subset"],
                            "split_group": info["split_group"], "status": info["status"]}
     with h5py.File(case_path(case, "ped", raw_dir), "r") as f:
+        # A time-mean speed of exactly 0 on open ground is a cell the simulation treated as a
+        # building (raster and run disagree there); count it as missing, not as calm air.
+        speed = np.array(f["Uped"], dtype=np.float64)
+        valid = fluid & (speed != 0)
+        out["n_zero_speed"] = int((fluid & (speed == 0)).sum())
         for key, var, power in (("U", "Uped", 1), ("u", "uped", 1), ("v", "vped", 1), ("TKE", "TKEped", 2)):
             field = np.array(f[var], dtype=np.float64)
             if field.shape != H.shape:
                 raise ValueError(f"{case}: {var} shape {field.shape} != topo shape {H.shape}")
-            out[key] = np.where(fluid, field, np.nan) / out["u_tau"] ** power
+            out[key] = np.where(valid, field, np.nan) / out["u_tau"] ** power
     return out
 
 
@@ -141,6 +148,7 @@ def case_targets(case: str, raw_dir: pathlib.Path = RAW_DIR) -> dict[str, float]
         "TKE_mean": float(tke.mean()),
         "n_open": int(c["fluid"].sum()),
         "open_nan_frac": float(1.0 - U.size / c["fluid"].sum()),
+        "open_zero_frac": float(c["n_zero_speed"] / c["fluid"].sum()),
         "wind_dir_deg": c["wind_dir_deg"],
         "dx": c["dx"],
         "u_tau": c["u_tau"],
