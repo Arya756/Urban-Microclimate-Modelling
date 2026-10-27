@@ -71,7 +71,7 @@ Metrics (open-ground cells only). "Pooled" pools every predicted item: cases for
 
 ```
 splits.json SHA-256: 3a28b842d4f9d1249a483049c99d5abbb9268f1e6262f77fc3018ad4526ba7a7
-Leakage test: PASS: 24 test groups, 136 dev groups, 0 overlap
+Leakage test: PASS: 24 test groups, 136 dev groups, 0 overlap   (version 1; version 2 has 93 development groups)
 Dummy predictor (per-case mean): pooled_r2 = 0.0000 (validates metric plumbing; see baseline note above)
 evaluate.py smoke test: PASS: 1 row appended to results/runs.csv
 ```

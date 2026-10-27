@@ -142,39 +142,40 @@ pipeline/S06b_feature_selection_AS/
 
 ### Overall Performance on Target `U_mean` (5 Outer Folds)
 
-| Method | Approach | Features / Components | Mean $R^2 \pm \text{std}$ | MAE (U/u*) | RMSE (U/u*) |
-|---|---|---|---|---|---|
-| Baseline | Full Set | 34.0 | $0.8170 \pm 0.0627$ | 0.1695 | 0.2688 |
-| Corr_filter_0.95 | Filter | 27.8 | $0.8162 \pm 0.0503$ | 0.1742 | 0.2721 |
-| Mutual_Info_top20 | Filter | 20.0 | $0.7966 \pm 0.0732$ | 0.1814 | 0.2844 |
-| F_test_top20 | Filter | 20.0 | $0.8068 \pm 0.0458$ | 0.1827 | 0.2797 |
-| Wrapper_RFECV | Wrapper | 16.6 | $0.8099 \pm 0.0792$ | 0.1725 | 0.2718 |
-| PCA_90%_var | PCA | 8.2 | $0.7208 \pm 0.1164$ | 0.2190 | 0.3327 |
-| PCA_95%_var | PCA | 11.2 | $0.7482 \pm 0.0928$ | 0.2076 | 0.3169 |
-| PCA_99%_var | PCA | 18.0 | $0.7557 \pm 0.0752$ | 0.2016 | 0.3127 |
+Results follow the pipeline audit of 27 October 2026 (corrected features and targets, development groups merged by city in splits version 2).
+
+| Method | Approach | Features / Components | Mean $R^2 \pm \text{std}$ | Pooled out-of-fold $R^2$ | MAE (U/u*) | RMSE (U/u*) |
+|---|---|---|---|---|---|---|
+| Baseline | Full Set | 34.0 | $0.8120 \pm 0.0288$ | 0.8137 | 0.1611 | 0.2716 |
+| Corr_filter_0.95 | Filter | 28.0 | $0.8197 \pm 0.0303$ | 0.8185 | 0.1656 | 0.2668 |
+| Mutual_Info_top20 | Filter | 20.0 | $0.8181 \pm 0.0310$ | 0.8127 | 0.1722 | 0.2696 |
+| F_test_top20 | Filter | 20.0 | $0.7888 \pm 0.0427$ | 0.7864 | 0.1757 | 0.2885 |
+| Wrapper_RFECV | Wrapper | 19.4 | $0.8033 \pm 0.0324$ | 0.8097 | 0.1651 | 0.2763 |
+| PCA_90%_var | PCA | 8.4 | $0.6861 \pm 0.0949$ | 0.6986 | 0.2184 | 0.3458 |
+| PCA_95%_var | PCA | 11.0 | $0.6918 \pm 0.0575$ | 0.6925 | 0.2195 | 0.3478 |
+| PCA_99%_var | PCA | 17.8 | $0.5981 \pm 0.0895$ | 0.6294 | 0.2445 | 0.3898 |
 
 ---
 
 ## Final Conclusions and Recommendations
 
-1. **Keep the full feature set for accuracy.** No selection method beats the 34-feature baseline ($R^2 = 0.8170 \pm 0.0627$). The best reductions are statistically equivalent to it: their mean paired differences are under a quarter of the fold-to-fold spread, with gains and losses mixed across folds.
+1. **Keep the full feature set.** No selection method clearly beats the 34-feature baseline ($R^2 = 0.8120 \pm 0.0288$, pooled 0.8137). The best reductions are statistically equivalent to it: gains and losses are mixed across folds and small against the fold-to-fold spread.
 
 2. **Cleanest reduction: correlation filtering.**
-   - It removes about 6 collinear features (27.8 kept) with no loss ($R^2 = 0.8162 \pm 0.0503$).
+   - It removes about 6 collinear features (28.0 kept) and scores about the same ($R^2 = 0.8197 \pm 0.0303$, pooled 0.8185).
    - It takes milliseconds, and the kept features stay physically interpretable.
 
 3. **Most compression: wrapper RFECV.**
-   - It keeps 16.6 features on average, about half, at $R^2 = 0.8099$.
+   - It keeps 19.4 features on average, a little over half, at $R^2 = 0.8033$.
    - It selects these in every fold:
-     - directional frontal area (`lambda_f_dir`);
-     - upwind and lateral fetch;
      - mean distance to walls;
+     - upwind and lateral fetch, and the share of open cells with upwind fetch above 50 m;
      - built volume;
-     - the Kanda displacement height and roughness length;
-     - the Macdonald roughness length.
+     - the windward wall share and facet orientation entropy;
+     - the Kanda roughness length.
 
-4. **F-test top 20** reaches $R^2 = 0.8068 \pm 0.0458$. In the first run (old targets) it edged the baseline; on the corrected data it does not.
+4. **F-test top 20** reaches $R^2 = 0.7888 \pm 0.0427$, below the baseline.
 
-5. **Avoid PCA for these tree models.** Keeping 90 to 99% of the variance with 8 to 18 components lowers $R^2$ to 0.721–0.756, because linear projections blur the physical thresholds the trees split on.
+5. **Avoid PCA for these tree models.** Keeping 90 to 99% of the variance with 8 to 18 components lowers the pooled $R^2$ to 0.629–0.699, because linear projections blur the physical thresholds the trees split on.
 
-For the full detailed scientific findings and answers to the research questions, see [`outputs/experiment_report.md`](outputs/experiment_report.md).
+The detailed discussion in [`outputs/experiment_report.md`](outputs/experiment_report.md) was written for the run before the pipeline audit; its reasoning holds, and the current numbers are the ones above and in `outputs/comparison.csv`.

@@ -23,7 +23,7 @@ pipeline/S05_feature_engineering/
 ├── aerodynamic.py            # Macdonald (1998) and Kanda et al. (2013) parameterizations
 ├── spatial_features.py       # Periodic Euclidean distance, FFT circular convolutions for local density & height
 ├── fetch_features.py         # Periodic raymarch for upwind, downwind, and lateral fetch
-├── feature_assembly.py       # Case-level record assembly, 22-channel pixel tensor, separate target loader
+├── feature_assembly.py       # Case-level record assembly and the 22-channel pixel tensor (its legacy target loader is unused)
 ├── process_cases.py          # Batch CLI runner, progress tracking, gate reporting
 ├── plot_feature_examples.py  # Channel grid and fetch figures for example cases
 ├── S05a_feature_engineering.ipynb  # First full run (superseded by process_cases.py, see below)

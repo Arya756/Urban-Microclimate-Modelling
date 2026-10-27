@@ -1,5 +1,7 @@
 # S06b Experiment Report: Feature Selection and PCA Experiments
 
+> **Note.** This report describes the run before the pipeline audit of 27 October 2026. The reasoning still holds; the current numbers are in `comparison.csv` and in the S06b README.
+
 - **Stage:** S06b (isolated sub-experiment)
 - **Target variable:** `U_mean`, the mean pedestrian-level wind speed over open ground, normalised by each case's friction velocity (U/u*)
 - **Dataset:** 482 development cases (190 idealized, 292 realistic) across 5 grouped folds

@@ -13,7 +13,7 @@ Predicts four summary statistics of the pedestrian-level wind field of each case
 ## S06c protocol
 
 - **Data.**
-  - 482 development cases: 190 idealized and 292 realistic, in 136 groups.
+  - 482 development cases: 190 idealized and 292 realistic, in 93 groups (splits version 2).
   - Targets come from `pipeline/S02_preprocessing/outputs/case_targets.csv` and are normalised by each case's own u*. Open ground is taken from the building map.
   - The 34 S05 case features include the published Kanda (2013) parameterisation.
   - The frozen test groups are never loaded.

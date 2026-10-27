@@ -1,5 +1,5 @@
 """
-S09: one-time scoring of the frozen test set with the final Phase 1 models.
+S09: scoring of the frozen test set with the final Phase 1 models.
 
 Every modelling choice was fixed on the development folds (S06c, S07) before this
 script was written. It refits each final model on all 482 development cases and
