@@ -1,277 +1,285 @@
 model,setting,case,subset,per_case_r2
-fixed setting,"random 80/20 split, held-out cases",US16_d45,idealized,0.8410
-fixed setting,"random 80/20 split, held-out cases",US64_d00,idealized,-0.2991
-fixed setting,"random 80/20 split, held-out cases",VA0625-CL-28_d45,idealized,0.8572
-fixed setting,"random 80/20 split, held-out cases",VA0625-HR-28_d45,idealized,0.8631
-fixed setting,"random 80/20 split, held-out cases",VA0625-HR-56_d00,idealized,0.8717
-fixed setting,"random 80/20 split, held-out cases",VA1111-CL-28_d45,idealized,0.8513
-fixed setting,"random 80/20 split, held-out cases",VA1111-CL-56_d00,idealized,0.8128
-fixed setting,"random 80/20 split, held-out cases",VA1111-SM-28_d45,idealized,0.8506
-fixed setting,"random 80/20 split, held-out cases",VA16-CL-56_d45,idealized,0.6826
-fixed setting,"random 80/20 split, held-out cases",VA16-SM-56_d45,idealized,0.6813
-fixed setting,"random 80/20 split, held-out cases",VA25-SM-56_d00,idealized,0.3615
-fixed setting,"random 80/20 split, held-out cases",VA35-CL-28_d00,idealized,0.3359
-fixed setting,"random 80/20 split, held-out cases",VA35-HR-28_d00,idealized,0.3770
-fixed setting,"random 80/20 split, held-out cases",VA35-HR-28_d45,idealized,0.4488
-fixed setting,"random 80/20 split, held-out cases",VA35-SM-28_d45,idealized,0.4588
-fixed setting,"random 80/20 split, held-out cases",VA4444-CL-56_d45,idealized,0.4941
-fixed setting,"random 80/20 split, held-out cases",VA4444-HR-56_d00,idealized,0.4540
-fixed setting,"random 80/20 split, held-out cases",VA53-HR-28_d00,idealized,0.3544
-fixed setting,"random 80/20 split, held-out cases",VA64-HR-28_d45,idealized,0.4016
-fixed setting,"random 80/20 split, held-out cases",VS0625-HR-28_d45,idealized,0.9159
-fixed setting,"random 80/20 split, held-out cases",VS16-HR-56_d00,idealized,0.7416
-fixed setting,"random 80/20 split, held-out cases",VS25-CL-56_d45,idealized,0.3615
-fixed setting,"random 80/20 split, held-out cases",VS25-HR-28_d00,idealized,0.5313
-fixed setting,"random 80/20 split, held-out cases",VS25-HR-56_d45,idealized,0.4378
-fixed setting,"random 80/20 split, held-out cases",VS25-SM-28_d00,idealized,0.3051
-fixed setting,"random 80/20 split, held-out cases",VS35-HR-56_d45,idealized,0.3636
-fixed setting,"random 80/20 split, held-out cases",VS4444-CL-56_d00,idealized,0.1429
-fixed setting,"random 80/20 split, held-out cases",VS4444-HR-28_d00,idealized,0.3388
-fixed setting,"random 80/20 split, held-out cases",VS4444-HR-56_d00,idealized,0.3998
-fixed setting,"random 80/20 split, held-out cases",VS4444-HR-56_d45,idealized,0.2832
-fixed setting,"random 80/20 split, held-out cases",VS4444-SM-28_d45,idealized,0.1974
-fixed setting,"random 80/20 split, held-out cases",VS64-HR-28_d00,idealized,0.3256
-fixed setting,"random 80/20 split, held-out cases",VS64-HR-56_d00,idealized,0.2919
-fixed setting,"random 80/20 split, held-out cases",VS64-HR-56_d45,idealized,0.4984
-fixed setting,"random 80/20 split, held-out cases",VS64-SM-28_d45,idealized,0.2999
-fixed setting,"random 80/20 split, held-out cases",AR-BA-V1_d00,realistic,0.1871
-fixed setting,"random 80/20 split, held-out cases",AU-Mel-U10_d90,realistic,0.3415
-fixed setting,"random 80/20 split, held-out cases",AU-Mel-U11_d00,realistic,0.2272
-fixed setting,"random 80/20 split, held-out cases",AU-Mel-U11_d90,realistic,0.2278
-fixed setting,"random 80/20 split, held-out cases",AU-Mel-U12_d00,realistic,0.2365
-fixed setting,"random 80/20 split, held-out cases",AU-Mel-U12_d90,realistic,0.2964
-fixed setting,"random 80/20 split, held-out cases",AU-Mel-U13_d90,realistic,0.2533
-fixed setting,"random 80/20 split, held-out cases",AU-Mel-U15_d00,realistic,0.0153
-fixed setting,"random 80/20 split, held-out cases",AU-Mel-U16_d00,realistic,0.3093
-fixed setting,"random 80/20 split, held-out cases",AU-Mel-U17_d00,realistic,0.2671
-fixed setting,"random 80/20 split, held-out cases",AU-Mel-U4_d00,realistic,0.2680
-fixed setting,"random 80/20 split, held-out cases",AU-Mel-U9_d00,realistic,0.5675
-fixed setting,"random 80/20 split, held-out cases",AU-Syd-U2_d45,realistic,0.2768
-fixed setting,"random 80/20 split, held-out cases",BR-SP-U3_d00,realistic,0.1983
-fixed setting,"random 80/20 split, held-out cases",CA-Van-U4_d00,realistic,0.3847
-fixed setting,"random 80/20 split, held-out cases",CA-Van-V1_d90,realistic,0.3235
-fixed setting,"random 80/20 split, held-out cases",CA-Van-V3_d90,realistic,0.1917
-fixed setting,"random 80/20 split, held-out cases",CH-Zur-U1_d90,realistic,0.2513
-fixed setting,"random 80/20 split, held-out cases",CN-BE-V1_d120,realistic,0.4842
-fixed setting,"random 80/20 split, held-out cases",CN-BE-V1_d30,realistic,0.4775
-fixed setting,"random 80/20 split, held-out cases",CN-BE-V1_d45,realistic,0.4123
-fixed setting,"random 80/20 split, held-out cases",CN-BE-V1_d75,realistic,0.5388
-fixed setting,"random 80/20 split, held-out cases",FR-PA-V2_d00,realistic,0.3358
-fixed setting,"random 80/20 split, held-out cases",FR-PA-V2_d90,realistic,0.1600
-fixed setting,"random 80/20 split, held-out cases",IT-ROM-U4_d90,realistic,0.1993
-fixed setting,"random 80/20 split, held-out cases",IT-ROM-V2_d00,realistic,0.1722
-fixed setting,"random 80/20 split, held-out cases",IT-ROM-V2_d90,realistic,0.1173
-fixed setting,"random 80/20 split, held-out cases",JP-Tok-U2_d00,realistic,0.5088
-fixed setting,"random 80/20 split, held-out cases",JP-Tok-V4_d00,realistic,0.5293
-fixed setting,"random 80/20 split, held-out cases",KO-SE-V10_d00,realistic,0.0703
-fixed setting,"random 80/20 split, held-out cases",KO-SE-V11_d15,realistic,0.2137
-fixed setting,"random 80/20 split, held-out cases",KO-SE-V11_d30,realistic,0.0036
-fixed setting,"random 80/20 split, held-out cases",KO-SE-V1_d00,realistic,0.2905
-fixed setting,"random 80/20 split, held-out cases",KO-SE-V1_d45,realistic,0.2541
-fixed setting,"random 80/20 split, held-out cases",KO-SE-V2_d00,realistic,0.0354
-fixed setting,"random 80/20 split, held-out cases",KO-SE-V4_d90,realistic,0.1587
-fixed setting,"random 80/20 split, held-out cases",NL-DEL-U1_d00,realistic,0.3199
-fixed setting,"random 80/20 split, held-out cases",NL-DEL-U1_d90,realistic,0.2649
-fixed setting,"random 80/20 split, held-out cases",PL-Lipowa,realistic,0.2404
-fixed setting,"random 80/20 split, held-out cases",SG-Boo-U1_d00,realistic,0.2794
-fixed setting,"random 80/20 split, held-out cases",SG-Boo-U2_d00,realistic,0.3137
-fixed setting,"random 80/20 split, held-out cases",SG-Boo-V1_d90,realistic,0.3466
-fixed setting,"random 80/20 split, held-out cases",SG-TelokKurau06,realistic,0.1929
-fixed setting,"random 80/20 split, held-out cases",TA-DC-U3_d00,realistic,0.5304
-fixed setting,"random 80/20 split, held-out cases",UA-KY-V14_d00,realistic,0.0594
-fixed setting,"random 80/20 split, held-out cases",UA-KY-V1_d15,realistic,0.4983
-fixed setting,"random 80/20 split, held-out cases",UA-KY-V3_d30,realistic,0.2583
-fixed setting,"random 80/20 split, held-out cases",UA-KY-V4_d00,realistic,0.2016
-fixed setting,"random 80/20 split, held-out cases",UA-KY-V5_d00,realistic,0.1831
-fixed setting,"random 80/20 split, held-out cases",UA-KY-V6_d30,realistic,0.2226
-fixed setting,"random 80/20 split, held-out cases",UA-KY-V8_d45,realistic,0.1951
-fixed setting,"random 80/20 split, held-out cases",UG-UG-U2_d00,realistic,0.4457
-fixed setting,"random 80/20 split, held-out cases",US-Bos-U2_d00,realistic,0.2651
-fixed setting,"random 80/20 split, held-out cases",US-Det-U11_d00,realistic,0.4659
-fixed setting,"random 80/20 split, held-out cases",US-Det-U5_d00,realistic,0.5622
-fixed setting,"random 80/20 split, held-out cases",US-Los-U1_d00,realistic,0.0798
-fixed setting,"random 80/20 split, held-out cases",US-Mia-U1_d00,realistic,0.5585
-fixed setting,"random 80/20 split, held-out cases",US-Pho-U1_d90,realistic,0.2572
-fixed setting,"random 80/20 split, held-out cases",US-Pho-U2_d00,realistic,0.4375
-fixed setting,"random 80/20 split, held-out cases",US-Pho-U5_d00,realistic,0.1925
-fixed setting,"random 80/20 split, held-out cases",Val-AU-Mel-U12_d00,realistic,0.2105
-fixed setting,"random 80/20 split, held-out cases",ALL (pooled R²),all,0.4478
-fixed setting,training cases (in-sample),VA0625-HR-28_d00,idealized,0.9466
-fixed setting,training cases (in-sample),VA0625-HR-56_d45,idealized,0.8313
-fixed setting,training cases (in-sample),VA1111-HR-56_d00,idealized,0.7785
-fixed setting,training cases (in-sample),VA16-CL-28_d45,idealized,0.8310
-fixed setting,training cases (in-sample),VA16-SM-28_d00,idealized,0.7009
-fixed setting,training cases (in-sample),VA4444-CL-28_d45,idealized,0.5455
-fixed setting,training cases (in-sample),VA53-CL-56_d45,idealized,0.6318
-fixed setting,training cases (in-sample),VS0625-CL-56_d00,idealized,0.8073
-fixed setting,training cases (in-sample),VS0625-SM-28_d45,idealized,0.9107
-fixed setting,training cases (in-sample),VS16-HR-28_d00,idealized,0.7843
-fixed setting,training cases (in-sample),VS16-SM-28_d00,idealized,0.7608
-fixed setting,training cases (in-sample),VS16-SM-28_d45,idealized,0.7908
-fixed setting,training cases (in-sample),VS25-HR-28_d45,idealized,0.5548
-fixed setting,training cases (in-sample),VS35-CL-56_d45,idealized,0.4904
+fixed setting,"random 80/20 split, held-out cases",US16_d45,idealized,0.8371
+fixed setting,"random 80/20 split, held-out cases",US64_d00,idealized,-0.3583
+fixed setting,"random 80/20 split, held-out cases",VA0625-CL-28_d45,idealized,0.8594
+fixed setting,"random 80/20 split, held-out cases",VA0625-HR-28_d45,idealized,0.8671
+fixed setting,"random 80/20 split, held-out cases",VA0625-HR-56_d00,idealized,0.8746
+fixed setting,"random 80/20 split, held-out cases",VA1111-CL-28_d45,idealized,0.8518
+fixed setting,"random 80/20 split, held-out cases",VA1111-CL-56_d00,idealized,0.8126
+fixed setting,"random 80/20 split, held-out cases",VA1111-SM-28_d45,idealized,0.8495
+fixed setting,"random 80/20 split, held-out cases",VA16-CL-56_d45,idealized,0.6765
+fixed setting,"random 80/20 split, held-out cases",VA16-SM-56_d45,idealized,0.6767
+fixed setting,"random 80/20 split, held-out cases",VA25-SM-56_d00,idealized,0.3603
+fixed setting,"random 80/20 split, held-out cases",VA35-CL-28_d00,idealized,0.3237
+fixed setting,"random 80/20 split, held-out cases",VA35-HR-28_d00,idealized,0.3511
+fixed setting,"random 80/20 split, held-out cases",VA35-HR-28_d45,idealized,0.4546
+fixed setting,"random 80/20 split, held-out cases",VA35-SM-28_d45,idealized,0.4450
+fixed setting,"random 80/20 split, held-out cases",VA4444-CL-56_d45,idealized,0.4971
+fixed setting,"random 80/20 split, held-out cases",VA4444-HR-56_d00,idealized,0.4508
+fixed setting,"random 80/20 split, held-out cases",VA53-HR-28_d00,idealized,0.3669
+fixed setting,"random 80/20 split, held-out cases",VA64-HR-28_d45,idealized,0.4005
+fixed setting,"random 80/20 split, held-out cases",VS0625-HR-28_d45,idealized,0.9172
+fixed setting,"random 80/20 split, held-out cases",VS16-HR-56_d00,idealized,0.7442
+fixed setting,"random 80/20 split, held-out cases",VS25-CL-56_d45,idealized,0.3337
+fixed setting,"random 80/20 split, held-out cases",VS25-HR-28_d00,idealized,0.5453
+fixed setting,"random 80/20 split, held-out cases",VS25-HR-56_d45,idealized,0.4265
+fixed setting,"random 80/20 split, held-out cases",VS25-SM-28_d00,idealized,0.3140
+fixed setting,"random 80/20 split, held-out cases",VS35-HR-56_d45,idealized,0.3759
+fixed setting,"random 80/20 split, held-out cases",VS4444-CL-56_d00,idealized,0.1335
+fixed setting,"random 80/20 split, held-out cases",VS4444-HR-28_d00,idealized,0.3402
+fixed setting,"random 80/20 split, held-out cases",VS4444-HR-56_d00,idealized,0.3997
+fixed setting,"random 80/20 split, held-out cases",VS4444-HR-56_d45,idealized,0.2980
+fixed setting,"random 80/20 split, held-out cases",VS4444-SM-28_d45,idealized,0.2005
+fixed setting,"random 80/20 split, held-out cases",VS64-HR-28_d00,idealized,0.2981
+fixed setting,"random 80/20 split, held-out cases",VS64-HR-56_d00,idealized,0.3002
+fixed setting,"random 80/20 split, held-out cases",VS64-HR-56_d45,idealized,0.5076
+fixed setting,"random 80/20 split, held-out cases",VS64-SM-28_d45,idealized,0.3222
+fixed setting,"random 80/20 split, held-out cases",AR-BA-V1_d00,realistic,0.1650
+fixed setting,"random 80/20 split, held-out cases",AU-Mel-U10_d90,realistic,0.3105
+fixed setting,"random 80/20 split, held-out cases",AU-Mel-U11_d00,realistic,0.2120
+fixed setting,"random 80/20 split, held-out cases",AU-Mel-U11_d90,realistic,0.2274
+fixed setting,"random 80/20 split, held-out cases",AU-Mel-U12_d00,realistic,0.2249
+fixed setting,"random 80/20 split, held-out cases",AU-Mel-U12_d90,realistic,0.2832
+fixed setting,"random 80/20 split, held-out cases",AU-Mel-U13_d90,realistic,0.2478
+fixed setting,"random 80/20 split, held-out cases",AU-Mel-U15_d00,realistic,0.0063
+fixed setting,"random 80/20 split, held-out cases",AU-Mel-U16_d00,realistic,0.3207
+fixed setting,"random 80/20 split, held-out cases",AU-Mel-U17_d00,realistic,0.2640
+fixed setting,"random 80/20 split, held-out cases",AU-Mel-U4_d00,realistic,0.2938
+fixed setting,"random 80/20 split, held-out cases",AU-Mel-U9_d00,realistic,0.5912
+fixed setting,"random 80/20 split, held-out cases",AU-Syd-U2_d45,realistic,0.2748
+fixed setting,"random 80/20 split, held-out cases",BR-SP-U3_d00,realistic,0.1577
+fixed setting,"random 80/20 split, held-out cases",CA-Van-U4_d00,realistic,0.3722
+fixed setting,"random 80/20 split, held-out cases",CA-Van-V1_d90,realistic,0.3204
+fixed setting,"random 80/20 split, held-out cases",CA-Van-V3_d90,realistic,0.1939
+fixed setting,"random 80/20 split, held-out cases",CH-Zur-U1_d90,realistic,0.2371
+fixed setting,"random 80/20 split, held-out cases",CN-BE-V1_d120,realistic,0.4933
+fixed setting,"random 80/20 split, held-out cases",CN-BE-V1_d30,realistic,0.4770
+fixed setting,"random 80/20 split, held-out cases",CN-BE-V1_d45,realistic,0.4113
+fixed setting,"random 80/20 split, held-out cases",CN-BE-V1_d75,realistic,0.5361
+fixed setting,"random 80/20 split, held-out cases",FR-PA-V2_d00,realistic,0.3240
+fixed setting,"random 80/20 split, held-out cases",FR-PA-V2_d90,realistic,0.1943
+fixed setting,"random 80/20 split, held-out cases",IT-ROM-U4_d90,realistic,0.1963
+fixed setting,"random 80/20 split, held-out cases",IT-ROM-V2_d00,realistic,0.1750
+fixed setting,"random 80/20 split, held-out cases",IT-ROM-V2_d90,realistic,0.1309
+fixed setting,"random 80/20 split, held-out cases",JP-Tok-U2_d00,realistic,0.4918
+fixed setting,"random 80/20 split, held-out cases",JP-Tok-V4_d00,realistic,0.4950
+fixed setting,"random 80/20 split, held-out cases",KO-SE-V10_d00,realistic,0.1252
+fixed setting,"random 80/20 split, held-out cases",KO-SE-V11_d15,realistic,0.1983
+fixed setting,"random 80/20 split, held-out cases",KO-SE-V11_d30,realistic,0.0321
+fixed setting,"random 80/20 split, held-out cases",KO-SE-V1_d00,realistic,0.2926
+fixed setting,"random 80/20 split, held-out cases",KO-SE-V1_d45,realistic,0.2638
+fixed setting,"random 80/20 split, held-out cases",KO-SE-V2_d00,realistic,0.0756
+fixed setting,"random 80/20 split, held-out cases",KO-SE-V4_d90,realistic,0.1533
+fixed setting,"random 80/20 split, held-out cases",NL-DEL-U1_d00,realistic,0.3230
+fixed setting,"random 80/20 split, held-out cases",NL-DEL-U1_d90,realistic,0.2778
+fixed setting,"random 80/20 split, held-out cases",PL-Lipowa,realistic,0.2406
+fixed setting,"random 80/20 split, held-out cases",SG-Boo-U1_d00,realistic,0.2811
+fixed setting,"random 80/20 split, held-out cases",SG-Boo-U2_d00,realistic,0.3127
+fixed setting,"random 80/20 split, held-out cases",SG-Boo-V1_d90,realistic,0.3751
+fixed setting,"random 80/20 split, held-out cases",SG-TelokKurau06,realistic,0.1885
+fixed setting,"random 80/20 split, held-out cases",TA-DC-U3_d00,realistic,0.5251
+fixed setting,"random 80/20 split, held-out cases",UA-KY-V14_d00,realistic,0.0676
+fixed setting,"random 80/20 split, held-out cases",UA-KY-V1_d15,realistic,0.5226
+fixed setting,"random 80/20 split, held-out cases",UA-KY-V3_d30,realistic,0.2661
+fixed setting,"random 80/20 split, held-out cases",UA-KY-V4_d00,realistic,0.1660
+fixed setting,"random 80/20 split, held-out cases",UA-KY-V5_d00,realistic,0.1861
+fixed setting,"random 80/20 split, held-out cases",UA-KY-V6_d30,realistic,0.2323
+fixed setting,"random 80/20 split, held-out cases",UA-KY-V8_d45,realistic,0.1948
+fixed setting,"random 80/20 split, held-out cases",UG-UG-U2_d00,realistic,0.4214
+fixed setting,"random 80/20 split, held-out cases",US-Bos-U2_d00,realistic,0.2589
+fixed setting,"random 80/20 split, held-out cases",US-Det-U11_d00,realistic,0.4576
+fixed setting,"random 80/20 split, held-out cases",US-Det-U5_d00,realistic,0.5788
+fixed setting,"random 80/20 split, held-out cases",US-Los-U1_d00,realistic,0.2127
+fixed setting,"random 80/20 split, held-out cases",US-Mia-U1_d00,realistic,0.5759
+fixed setting,"random 80/20 split, held-out cases",US-Pho-U1_d90,realistic,0.2587
+fixed setting,"random 80/20 split, held-out cases",US-Pho-U2_d00,realistic,0.4276
+fixed setting,"random 80/20 split, held-out cases",US-Pho-U5_d00,realistic,0.1891
+fixed setting,"random 80/20 split, held-out cases",Val-AU-Mel-U12_d00,realistic,0.2584
+fixed setting,"random 80/20 split, held-out cases",ALL (pooled R²),idealized,0.8831
+fixed setting,"random 80/20 split, held-out cases",ALL (pooled R²),all,0.4504
+fixed setting,"random 80/20 split, held-out cases",ALL (pooled R²),realistic,0.3767
+fixed setting,training cases (in-sample),VA0625-HR-28_d00,idealized,0.9474
+fixed setting,training cases (in-sample),VA0625-HR-56_d45,idealized,0.8357
+fixed setting,training cases (in-sample),VA1111-HR-56_d00,idealized,0.7791
+fixed setting,training cases (in-sample),VA16-CL-28_d45,idealized,0.8266
+fixed setting,training cases (in-sample),VA16-SM-28_d00,idealized,0.6991
+fixed setting,training cases (in-sample),VA4444-CL-28_d45,idealized,0.5401
+fixed setting,training cases (in-sample),VA53-CL-56_d45,idealized,0.6307
+fixed setting,training cases (in-sample),VS0625-CL-56_d00,idealized,0.8082
+fixed setting,training cases (in-sample),VS0625-SM-28_d45,idealized,0.9092
+fixed setting,training cases (in-sample),VS16-HR-28_d00,idealized,0.7862
+fixed setting,training cases (in-sample),VS16-SM-28_d00,idealized,0.7667
+fixed setting,training cases (in-sample),VS16-SM-28_d45,idealized,0.7863
+fixed setting,training cases (in-sample),VS25-HR-28_d45,idealized,0.5502
+fixed setting,training cases (in-sample),VS35-CL-56_d45,idealized,0.4549
 fixed setting,training cases (in-sample),AU-MEL-V2_d00,realistic,0.6110
-fixed setting,training cases (in-sample),AU-MEL-V2_d90,realistic,0.5736
-fixed setting,training cases (in-sample),AU-Mel-U13_d00,realistic,0.2356
-fixed setting,training cases (in-sample),AU-Mel-U16_d15,realistic,0.2687
-fixed setting,training cases (in-sample),AU-Mel-U1_d00,realistic,0.5425
-fixed setting,training cases (in-sample),AU-Mel-U2_d00,realistic,0.3668
-fixed setting,training cases (in-sample),CA-Van-U2_d90,realistic,0.4208
-fixed setting,training cases (in-sample),CA-Van-U3_d00,realistic,0.3213
-fixed setting,training cases (in-sample),CH-BAS-V1_d00,realistic,0.6913
-fixed setting,training cases (in-sample),CH-Zur-U1_d00,realistic,0.2130
-fixed setting,training cases (in-sample),IT-ROM-U3_d90,realistic,0.6728
-fixed setting,training cases (in-sample),KO-SE-U2_d00,realistic,0.2701
-fixed setting,training cases (in-sample),KO-SE-V11_d00,realistic,0.4218
-fixed setting,training cases (in-sample),KO-SE-V3_d15,realistic,0.2106
-fixed setting,training cases (in-sample),KO-SE-V3_d45,realistic,0.2771
-fixed setting,training cases (in-sample),KO-SE-V4_d00,realistic,0.3229
-fixed setting,training cases (in-sample),KO-SE-V8_d15,realistic,0.4364
-fixed setting,training cases (in-sample),NL-AMS-U1_d90,realistic,0.3755
-fixed setting,training cases (in-sample),SG-Boo-U1_d90,realistic,0.3427
-fixed setting,training cases (in-sample),UA-KY-V1_d45,realistic,0.3885
-fixed setting,training cases (in-sample),UA-KY-V6_d45,realistic,0.2648
-fixed setting,training cases (in-sample),UA-KY-V7_d30,realistic,0.3541
-fixed setting,training cases (in-sample),UA-KY-V8_d15,realistic,0.2909
-fixed setting,training cases (in-sample),US-Det-U11_d90,realistic,0.5589
-fixed setting,training cases (in-sample),US-Det-U9_d90,realistic,0.4415
-fixed setting,training cases (in-sample),US-Mia-U1_d90,realistic,0.8023
-fixed setting,training cases (in-sample),ALL (pooled R²),all,0.6579
-high capacity,"random 80/20 split, held-out cases",US16_d45,idealized,0.9160
-high capacity,"random 80/20 split, held-out cases",US64_d00,idealized,-0.2140
-high capacity,"random 80/20 split, held-out cases",VA0625-CL-28_d45,idealized,0.9324
-high capacity,"random 80/20 split, held-out cases",VA0625-HR-28_d45,idealized,0.9401
-high capacity,"random 80/20 split, held-out cases",VA0625-HR-56_d00,idealized,0.8611
-high capacity,"random 80/20 split, held-out cases",VA1111-CL-28_d45,idealized,0.9169
-high capacity,"random 80/20 split, held-out cases",VA1111-CL-56_d00,idealized,0.8500
-high capacity,"random 80/20 split, held-out cases",VA1111-SM-28_d45,idealized,0.9143
-high capacity,"random 80/20 split, held-out cases",VA16-CL-56_d45,idealized,0.7500
-high capacity,"random 80/20 split, held-out cases",VA16-SM-56_d45,idealized,0.7522
-high capacity,"random 80/20 split, held-out cases",VA25-SM-56_d00,idealized,0.4080
-high capacity,"random 80/20 split, held-out cases",VA35-CL-28_d00,idealized,0.4459
-high capacity,"random 80/20 split, held-out cases",VA35-HR-28_d00,idealized,0.4798
-high capacity,"random 80/20 split, held-out cases",VA35-HR-28_d45,idealized,0.5352
-high capacity,"random 80/20 split, held-out cases",VA35-SM-28_d45,idealized,0.5924
-high capacity,"random 80/20 split, held-out cases",VA4444-CL-56_d45,idealized,0.5206
-high capacity,"random 80/20 split, held-out cases",VA4444-HR-56_d00,idealized,0.4401
-high capacity,"random 80/20 split, held-out cases",VA53-HR-28_d00,idealized,0.3131
-high capacity,"random 80/20 split, held-out cases",VA64-HR-28_d45,idealized,0.4141
-high capacity,"random 80/20 split, held-out cases",VS0625-HR-28_d45,idealized,0.9503
-high capacity,"random 80/20 split, held-out cases",VS16-HR-56_d00,idealized,0.7960
-high capacity,"random 80/20 split, held-out cases",VS25-CL-56_d45,idealized,0.3902
-high capacity,"random 80/20 split, held-out cases",VS25-HR-28_d00,idealized,0.6644
-high capacity,"random 80/20 split, held-out cases",VS25-HR-56_d45,idealized,0.4626
-high capacity,"random 80/20 split, held-out cases",VS25-SM-28_d00,idealized,0.3356
-high capacity,"random 80/20 split, held-out cases",VS35-HR-56_d45,idealized,0.4371
-high capacity,"random 80/20 split, held-out cases",VS4444-CL-56_d00,idealized,0.2164
-high capacity,"random 80/20 split, held-out cases",VS4444-HR-28_d00,idealized,0.3583
-high capacity,"random 80/20 split, held-out cases",VS4444-HR-56_d00,idealized,0.3747
-high capacity,"random 80/20 split, held-out cases",VS4444-HR-56_d45,idealized,0.3353
+fixed setting,training cases (in-sample),AU-MEL-V2_d90,realistic,0.5711
+fixed setting,training cases (in-sample),AU-Mel-U13_d00,realistic,0.2439
+fixed setting,training cases (in-sample),AU-Mel-U16_d15,realistic,0.2664
+fixed setting,training cases (in-sample),AU-Mel-U1_d00,realistic,0.5300
+fixed setting,training cases (in-sample),AU-Mel-U2_d00,realistic,0.3450
+fixed setting,training cases (in-sample),CA-Van-U2_d90,realistic,0.4248
+fixed setting,training cases (in-sample),CA-Van-U3_d00,realistic,0.3189
+fixed setting,training cases (in-sample),CH-BAS-V1_d00,realistic,0.6861
+fixed setting,training cases (in-sample),CH-Zur-U1_d00,realistic,0.2203
+fixed setting,training cases (in-sample),IT-ROM-U3_d90,realistic,0.6752
+fixed setting,training cases (in-sample),KO-SE-U2_d00,realistic,0.2673
+fixed setting,training cases (in-sample),KO-SE-V11_d00,realistic,0.4163
+fixed setting,training cases (in-sample),KO-SE-V3_d15,realistic,0.2200
+fixed setting,training cases (in-sample),KO-SE-V3_d45,realistic,0.2507
+fixed setting,training cases (in-sample),KO-SE-V4_d00,realistic,0.3232
+fixed setting,training cases (in-sample),KO-SE-V8_d15,realistic,0.4149
+fixed setting,training cases (in-sample),NL-AMS-U1_d90,realistic,0.3896
+fixed setting,training cases (in-sample),SG-Boo-U1_d90,realistic,0.3369
+fixed setting,training cases (in-sample),UA-KY-V1_d45,realistic,0.3984
+fixed setting,training cases (in-sample),UA-KY-V6_d45,realistic,0.2716
+fixed setting,training cases (in-sample),UA-KY-V7_d30,realistic,0.3569
+fixed setting,training cases (in-sample),UA-KY-V8_d15,realistic,0.3012
+fixed setting,training cases (in-sample),US-Det-U11_d90,realistic,0.5523
+fixed setting,training cases (in-sample),US-Det-U9_d90,realistic,0.4432
+fixed setting,training cases (in-sample),US-Mia-U1_d90,realistic,0.8006
+fixed setting,training cases (in-sample),ALL (pooled R²),idealized,0.9013
+fixed setting,training cases (in-sample),ALL (pooled R²),all,0.6578
+fixed setting,training cases (in-sample),ALL (pooled R²),realistic,0.5629
+high capacity,"random 80/20 split, held-out cases",US16_d45,idealized,0.9060
+high capacity,"random 80/20 split, held-out cases",US64_d00,idealized,-0.0957
+high capacity,"random 80/20 split, held-out cases",VA0625-CL-28_d45,idealized,0.9333
+high capacity,"random 80/20 split, held-out cases",VA0625-HR-28_d45,idealized,0.9404
+high capacity,"random 80/20 split, held-out cases",VA0625-HR-56_d00,idealized,0.8690
+high capacity,"random 80/20 split, held-out cases",VA1111-CL-28_d45,idealized,0.9140
+high capacity,"random 80/20 split, held-out cases",VA1111-CL-56_d00,idealized,0.8487
+high capacity,"random 80/20 split, held-out cases",VA1111-SM-28_d45,idealized,0.9112
+high capacity,"random 80/20 split, held-out cases",VA16-CL-56_d45,idealized,0.7495
+high capacity,"random 80/20 split, held-out cases",VA16-SM-56_d45,idealized,0.7501
+high capacity,"random 80/20 split, held-out cases",VA25-SM-56_d00,idealized,0.4171
+high capacity,"random 80/20 split, held-out cases",VA35-CL-28_d00,idealized,0.3981
+high capacity,"random 80/20 split, held-out cases",VA35-HR-28_d00,idealized,0.4754
+high capacity,"random 80/20 split, held-out cases",VA35-HR-28_d45,idealized,0.5326
+high capacity,"random 80/20 split, held-out cases",VA35-SM-28_d45,idealized,0.5846
+high capacity,"random 80/20 split, held-out cases",VA4444-CL-56_d45,idealized,0.5364
+high capacity,"random 80/20 split, held-out cases",VA4444-HR-56_d00,idealized,0.4397
+high capacity,"random 80/20 split, held-out cases",VA53-HR-28_d00,idealized,0.2936
+high capacity,"random 80/20 split, held-out cases",VA64-HR-28_d45,idealized,0.3655
+high capacity,"random 80/20 split, held-out cases",VS0625-HR-28_d45,idealized,0.9508
+high capacity,"random 80/20 split, held-out cases",VS16-HR-56_d00,idealized,0.7911
+high capacity,"random 80/20 split, held-out cases",VS25-CL-56_d45,idealized,0.3511
+high capacity,"random 80/20 split, held-out cases",VS25-HR-28_d00,idealized,0.6568
+high capacity,"random 80/20 split, held-out cases",VS25-HR-56_d45,idealized,0.4745
+high capacity,"random 80/20 split, held-out cases",VS25-SM-28_d00,idealized,0.3393
+high capacity,"random 80/20 split, held-out cases",VS35-HR-56_d45,idealized,0.4149
+high capacity,"random 80/20 split, held-out cases",VS4444-CL-56_d00,idealized,0.2589
+high capacity,"random 80/20 split, held-out cases",VS4444-HR-28_d00,idealized,0.3842
+high capacity,"random 80/20 split, held-out cases",VS4444-HR-56_d00,idealized,0.3682
+high capacity,"random 80/20 split, held-out cases",VS4444-HR-56_d45,idealized,0.3362
 high capacity,"random 80/20 split, held-out cases",VS4444-SM-28_d45,idealized,0.2097
-high capacity,"random 80/20 split, held-out cases",VS64-HR-28_d00,idealized,0.3223
-high capacity,"random 80/20 split, held-out cases",VS64-HR-56_d00,idealized,0.2370
-high capacity,"random 80/20 split, held-out cases",VS64-HR-56_d45,idealized,0.5001
-high capacity,"random 80/20 split, held-out cases",VS64-SM-28_d45,idealized,0.3443
-high capacity,"random 80/20 split, held-out cases",AR-BA-V1_d00,realistic,0.1729
-high capacity,"random 80/20 split, held-out cases",AU-Mel-U10_d90,realistic,0.2527
-high capacity,"random 80/20 split, held-out cases",AU-Mel-U11_d00,realistic,0.2527
-high capacity,"random 80/20 split, held-out cases",AU-Mel-U11_d90,realistic,0.2280
-high capacity,"random 80/20 split, held-out cases",AU-Mel-U12_d00,realistic,0.2329
-high capacity,"random 80/20 split, held-out cases",AU-Mel-U12_d90,realistic,0.2719
-high capacity,"random 80/20 split, held-out cases",AU-Mel-U13_d90,realistic,0.2522
-high capacity,"random 80/20 split, held-out cases",AU-Mel-U15_d00,realistic,-0.0336
-high capacity,"random 80/20 split, held-out cases",AU-Mel-U16_d00,realistic,0.3361
-high capacity,"random 80/20 split, held-out cases",AU-Mel-U17_d00,realistic,0.2450
-high capacity,"random 80/20 split, held-out cases",AU-Mel-U4_d00,realistic,0.2386
-high capacity,"random 80/20 split, held-out cases",AU-Mel-U9_d00,realistic,0.5923
-high capacity,"random 80/20 split, held-out cases",AU-Syd-U2_d45,realistic,0.2932
-high capacity,"random 80/20 split, held-out cases",BR-SP-U3_d00,realistic,0.1825
-high capacity,"random 80/20 split, held-out cases",CA-Van-U4_d00,realistic,0.3683
-high capacity,"random 80/20 split, held-out cases",CA-Van-V1_d90,realistic,0.3527
-high capacity,"random 80/20 split, held-out cases",CA-Van-V3_d90,realistic,0.1229
-high capacity,"random 80/20 split, held-out cases",CH-Zur-U1_d90,realistic,0.1972
-high capacity,"random 80/20 split, held-out cases",CN-BE-V1_d120,realistic,0.5151
-high capacity,"random 80/20 split, held-out cases",CN-BE-V1_d30,realistic,0.4849
-high capacity,"random 80/20 split, held-out cases",CN-BE-V1_d45,realistic,0.4404
-high capacity,"random 80/20 split, held-out cases",CN-BE-V1_d75,realistic,0.5651
-high capacity,"random 80/20 split, held-out cases",FR-PA-V2_d00,realistic,0.3587
-high capacity,"random 80/20 split, held-out cases",FR-PA-V2_d90,realistic,0.1166
-high capacity,"random 80/20 split, held-out cases",IT-ROM-U4_d90,realistic,0.2296
-high capacity,"random 80/20 split, held-out cases",IT-ROM-V2_d00,realistic,0.1637
-high capacity,"random 80/20 split, held-out cases",IT-ROM-V2_d90,realistic,0.0520
-high capacity,"random 80/20 split, held-out cases",JP-Tok-U2_d00,realistic,0.5012
-high capacity,"random 80/20 split, held-out cases",JP-Tok-V4_d00,realistic,0.5039
-high capacity,"random 80/20 split, held-out cases",KO-SE-V10_d00,realistic,0.0648
-high capacity,"random 80/20 split, held-out cases",KO-SE-V11_d15,realistic,0.2528
-high capacity,"random 80/20 split, held-out cases",KO-SE-V11_d30,realistic,0.0855
-high capacity,"random 80/20 split, held-out cases",KO-SE-V1_d00,realistic,0.2770
+high capacity,"random 80/20 split, held-out cases",VS64-HR-28_d00,idealized,0.2946
+high capacity,"random 80/20 split, held-out cases",VS64-HR-56_d00,idealized,0.1816
+high capacity,"random 80/20 split, held-out cases",VS64-HR-56_d45,idealized,0.5100
+high capacity,"random 80/20 split, held-out cases",VS64-SM-28_d45,idealized,0.3394
+high capacity,"random 80/20 split, held-out cases",AR-BA-V1_d00,realistic,0.1672
+high capacity,"random 80/20 split, held-out cases",AU-Mel-U10_d90,realistic,0.2429
+high capacity,"random 80/20 split, held-out cases",AU-Mel-U11_d00,realistic,0.2565
+high capacity,"random 80/20 split, held-out cases",AU-Mel-U11_d90,realistic,0.2337
+high capacity,"random 80/20 split, held-out cases",AU-Mel-U12_d00,realistic,0.2407
+high capacity,"random 80/20 split, held-out cases",AU-Mel-U12_d90,realistic,0.3072
+high capacity,"random 80/20 split, held-out cases",AU-Mel-U13_d90,realistic,0.2281
+high capacity,"random 80/20 split, held-out cases",AU-Mel-U15_d00,realistic,0.0228
+high capacity,"random 80/20 split, held-out cases",AU-Mel-U16_d00,realistic,0.3360
+high capacity,"random 80/20 split, held-out cases",AU-Mel-U17_d00,realistic,0.2549
+high capacity,"random 80/20 split, held-out cases",AU-Mel-U4_d00,realistic,0.2277
+high capacity,"random 80/20 split, held-out cases",AU-Mel-U9_d00,realistic,0.6368
+high capacity,"random 80/20 split, held-out cases",AU-Syd-U2_d45,realistic,0.2963
+high capacity,"random 80/20 split, held-out cases",BR-SP-U3_d00,realistic,0.1470
+high capacity,"random 80/20 split, held-out cases",CA-Van-U4_d00,realistic,0.3631
+high capacity,"random 80/20 split, held-out cases",CA-Van-V1_d90,realistic,0.3533
+high capacity,"random 80/20 split, held-out cases",CA-Van-V3_d90,realistic,0.1284
+high capacity,"random 80/20 split, held-out cases",CH-Zur-U1_d90,realistic,0.1983
+high capacity,"random 80/20 split, held-out cases",CN-BE-V1_d120,realistic,0.5158
+high capacity,"random 80/20 split, held-out cases",CN-BE-V1_d30,realistic,0.4842
+high capacity,"random 80/20 split, held-out cases",CN-BE-V1_d45,realistic,0.4486
+high capacity,"random 80/20 split, held-out cases",CN-BE-V1_d75,realistic,0.5620
+high capacity,"random 80/20 split, held-out cases",FR-PA-V2_d00,realistic,0.3605
+high capacity,"random 80/20 split, held-out cases",FR-PA-V2_d90,realistic,0.0763
+high capacity,"random 80/20 split, held-out cases",IT-ROM-U4_d90,realistic,0.2214
+high capacity,"random 80/20 split, held-out cases",IT-ROM-V2_d00,realistic,0.1739
+high capacity,"random 80/20 split, held-out cases",IT-ROM-V2_d90,realistic,0.0812
+high capacity,"random 80/20 split, held-out cases",JP-Tok-U2_d00,realistic,0.4884
+high capacity,"random 80/20 split, held-out cases",JP-Tok-V4_d00,realistic,0.4891
+high capacity,"random 80/20 split, held-out cases",KO-SE-V10_d00,realistic,0.1965
+high capacity,"random 80/20 split, held-out cases",KO-SE-V11_d15,realistic,0.2081
+high capacity,"random 80/20 split, held-out cases",KO-SE-V11_d30,realistic,0.0727
+high capacity,"random 80/20 split, held-out cases",KO-SE-V1_d00,realistic,0.2566
 high capacity,"random 80/20 split, held-out cases",KO-SE-V1_d45,realistic,0.2952
-high capacity,"random 80/20 split, held-out cases",KO-SE-V2_d00,realistic,0.0584
-high capacity,"random 80/20 split, held-out cases",KO-SE-V4_d90,realistic,0.1538
-high capacity,"random 80/20 split, held-out cases",NL-DEL-U1_d00,realistic,0.3615
-high capacity,"random 80/20 split, held-out cases",NL-DEL-U1_d90,realistic,0.3142
+high capacity,"random 80/20 split, held-out cases",KO-SE-V2_d00,realistic,0.0725
+high capacity,"random 80/20 split, held-out cases",KO-SE-V4_d90,realistic,0.1438
+high capacity,"random 80/20 split, held-out cases",NL-DEL-U1_d00,realistic,0.3732
+high capacity,"random 80/20 split, held-out cases",NL-DEL-U1_d90,realistic,0.3164
 high capacity,"random 80/20 split, held-out cases",PL-Lipowa,realistic,0.2171
-high capacity,"random 80/20 split, held-out cases",SG-Boo-U1_d00,realistic,0.2692
-high capacity,"random 80/20 split, held-out cases",SG-Boo-U2_d00,realistic,0.2933
-high capacity,"random 80/20 split, held-out cases",SG-Boo-V1_d90,realistic,0.4136
-high capacity,"random 80/20 split, held-out cases",SG-TelokKurau06,realistic,0.1719
-high capacity,"random 80/20 split, held-out cases",TA-DC-U3_d00,realistic,0.5230
-high capacity,"random 80/20 split, held-out cases",UA-KY-V14_d00,realistic,0.0928
-high capacity,"random 80/20 split, held-out cases",UA-KY-V1_d15,realistic,0.5804
-high capacity,"random 80/20 split, held-out cases",UA-KY-V3_d30,realistic,0.3349
-high capacity,"random 80/20 split, held-out cases",UA-KY-V4_d00,realistic,0.1541
-high capacity,"random 80/20 split, held-out cases",UA-KY-V5_d00,realistic,0.1906
-high capacity,"random 80/20 split, held-out cases",UA-KY-V6_d30,realistic,0.2867
-high capacity,"random 80/20 split, held-out cases",UA-KY-V8_d45,realistic,0.2081
-high capacity,"random 80/20 split, held-out cases",UG-UG-U2_d00,realistic,0.4295
-high capacity,"random 80/20 split, held-out cases",US-Bos-U2_d00,realistic,0.2394
-high capacity,"random 80/20 split, held-out cases",US-Det-U11_d00,realistic,0.4430
-high capacity,"random 80/20 split, held-out cases",US-Det-U5_d00,realistic,0.5065
-high capacity,"random 80/20 split, held-out cases",US-Los-U1_d00,realistic,0.1829
-high capacity,"random 80/20 split, held-out cases",US-Mia-U1_d00,realistic,0.5265
-high capacity,"random 80/20 split, held-out cases",US-Pho-U1_d90,realistic,0.2355
-high capacity,"random 80/20 split, held-out cases",US-Pho-U2_d00,realistic,0.4492
-high capacity,"random 80/20 split, held-out cases",US-Pho-U5_d00,realistic,0.1703
-high capacity,"random 80/20 split, held-out cases",Val-AU-Mel-U12_d00,realistic,0.2286
-high capacity,"random 80/20 split, held-out cases",ALL (pooled R²),all,0.4566
-high capacity,training cases (in-sample),VA0625-HR-28_d00,idealized,0.9754
+high capacity,"random 80/20 split, held-out cases",SG-Boo-U1_d00,realistic,0.3134
+high capacity,"random 80/20 split, held-out cases",SG-Boo-U2_d00,realistic,0.2784
+high capacity,"random 80/20 split, held-out cases",SG-Boo-V1_d90,realistic,0.4161
+high capacity,"random 80/20 split, held-out cases",SG-TelokKurau06,realistic,0.1551
+high capacity,"random 80/20 split, held-out cases",TA-DC-U3_d00,realistic,0.5181
+high capacity,"random 80/20 split, held-out cases",UA-KY-V14_d00,realistic,0.0988
+high capacity,"random 80/20 split, held-out cases",UA-KY-V1_d15,realistic,0.5887
+high capacity,"random 80/20 split, held-out cases",UA-KY-V3_d30,realistic,0.3225
+high capacity,"random 80/20 split, held-out cases",UA-KY-V4_d00,realistic,0.1201
+high capacity,"random 80/20 split, held-out cases",UA-KY-V5_d00,realistic,0.1899
+high capacity,"random 80/20 split, held-out cases",UA-KY-V6_d30,realistic,0.2899
+high capacity,"random 80/20 split, held-out cases",UA-KY-V8_d45,realistic,0.2078
+high capacity,"random 80/20 split, held-out cases",UG-UG-U2_d00,realistic,0.4097
+high capacity,"random 80/20 split, held-out cases",US-Bos-U2_d00,realistic,0.2272
+high capacity,"random 80/20 split, held-out cases",US-Det-U11_d00,realistic,0.4357
+high capacity,"random 80/20 split, held-out cases",US-Det-U5_d00,realistic,0.5287
+high capacity,"random 80/20 split, held-out cases",US-Los-U1_d00,realistic,0.2190
+high capacity,"random 80/20 split, held-out cases",US-Mia-U1_d00,realistic,0.5673
+high capacity,"random 80/20 split, held-out cases",US-Pho-U1_d90,realistic,0.2215
+high capacity,"random 80/20 split, held-out cases",US-Pho-U2_d00,realistic,0.4398
+high capacity,"random 80/20 split, held-out cases",US-Pho-U5_d00,realistic,0.1780
+high capacity,"random 80/20 split, held-out cases",Val-AU-Mel-U12_d00,realistic,0.2813
+high capacity,"random 80/20 split, held-out cases",ALL (pooled R²),idealized,0.9081
+high capacity,"random 80/20 split, held-out cases",ALL (pooled R²),all,0.4574
+high capacity,"random 80/20 split, held-out cases",ALL (pooled R²),realistic,0.3808
+high capacity,training cases (in-sample),VA0625-HR-28_d00,idealized,0.9761
 high capacity,training cases (in-sample),VA0625-HR-56_d45,idealized,0.9169
-high capacity,training cases (in-sample),VA1111-HR-56_d00,idealized,0.8336
-high capacity,training cases (in-sample),VA16-CL-28_d45,idealized,0.9050
-high capacity,training cases (in-sample),VA16-SM-28_d00,idealized,0.7852
-high capacity,training cases (in-sample),VA4444-CL-28_d45,idealized,0.8074
-high capacity,training cases (in-sample),VA53-CL-56_d45,idealized,0.8934
-high capacity,training cases (in-sample),VS0625-CL-56_d00,idealized,0.8722
-high capacity,training cases (in-sample),VS0625-SM-28_d45,idealized,0.9474
-high capacity,training cases (in-sample),VS16-HR-28_d00,idealized,0.8466
-high capacity,training cases (in-sample),VS16-SM-28_d00,idealized,0.8514
-high capacity,training cases (in-sample),VS16-SM-28_d45,idealized,0.8886
-high capacity,training cases (in-sample),VS25-HR-28_d45,idealized,0.7104
-high capacity,training cases (in-sample),VS35-CL-56_d45,idealized,0.8144
-high capacity,training cases (in-sample),AU-MEL-V2_d00,realistic,0.6892
-high capacity,training cases (in-sample),AU-MEL-V2_d90,realistic,0.6473
-high capacity,training cases (in-sample),AU-Mel-U13_d00,realistic,0.4118
-high capacity,training cases (in-sample),AU-Mel-U16_d15,realistic,0.3863
-high capacity,training cases (in-sample),AU-Mel-U1_d00,realistic,0.6744
-high capacity,training cases (in-sample),AU-Mel-U2_d00,realistic,0.6549
-high capacity,training cases (in-sample),CA-Van-U2_d90,realistic,0.6805
-high capacity,training cases (in-sample),CA-Van-U3_d00,realistic,0.4768
-high capacity,training cases (in-sample),CH-BAS-V1_d00,realistic,0.7828
-high capacity,training cases (in-sample),CH-Zur-U1_d00,realistic,0.4411
-high capacity,training cases (in-sample),IT-ROM-U3_d90,realistic,0.7630
-high capacity,training cases (in-sample),KO-SE-U2_d00,realistic,0.4456
-high capacity,training cases (in-sample),KO-SE-V11_d00,realistic,0.5946
-high capacity,training cases (in-sample),KO-SE-V3_d15,realistic,0.4804
-high capacity,training cases (in-sample),KO-SE-V3_d45,realistic,0.5408
-high capacity,training cases (in-sample),KO-SE-V4_d00,realistic,0.5052
-high capacity,training cases (in-sample),KO-SE-V8_d15,realistic,0.6251
-high capacity,training cases (in-sample),NL-AMS-U1_d90,realistic,0.5275
-high capacity,training cases (in-sample),SG-Boo-U1_d90,realistic,0.5265
-high capacity,training cases (in-sample),UA-KY-V1_d45,realistic,0.6024
-high capacity,training cases (in-sample),UA-KY-V6_d45,realistic,0.4911
-high capacity,training cases (in-sample),UA-KY-V7_d30,realistic,0.5865
-high capacity,training cases (in-sample),UA-KY-V8_d15,realistic,0.4561
-high capacity,training cases (in-sample),US-Det-U11_d90,realistic,0.6887
-high capacity,training cases (in-sample),US-Det-U9_d90,realistic,0.5905
-high capacity,training cases (in-sample),US-Mia-U1_d90,realistic,0.8748
-high capacity,training cases (in-sample),ALL (pooled R²),all,0.7510
+high capacity,training cases (in-sample),VA1111-HR-56_d00,idealized,0.8332
+high capacity,training cases (in-sample),VA16-CL-28_d45,idealized,0.9072
+high capacity,training cases (in-sample),VA16-SM-28_d00,idealized,0.7845
+high capacity,training cases (in-sample),VA4444-CL-28_d45,idealized,0.8059
+high capacity,training cases (in-sample),VA53-CL-56_d45,idealized,0.8929
+high capacity,training cases (in-sample),VS0625-CL-56_d00,idealized,0.8747
+high capacity,training cases (in-sample),VS0625-SM-28_d45,idealized,0.9480
+high capacity,training cases (in-sample),VS16-HR-28_d00,idealized,0.8455
+high capacity,training cases (in-sample),VS16-SM-28_d00,idealized,0.8487
+high capacity,training cases (in-sample),VS16-SM-28_d45,idealized,0.8892
+high capacity,training cases (in-sample),VS25-HR-28_d45,idealized,0.7152
+high capacity,training cases (in-sample),VS35-CL-56_d45,idealized,0.8062
+high capacity,training cases (in-sample),AU-MEL-V2_d00,realistic,0.6836
+high capacity,training cases (in-sample),AU-MEL-V2_d90,realistic,0.6405
+high capacity,training cases (in-sample),AU-Mel-U13_d00,realistic,0.4043
+high capacity,training cases (in-sample),AU-Mel-U16_d15,realistic,0.3945
+high capacity,training cases (in-sample),AU-Mel-U1_d00,realistic,0.6910
+high capacity,training cases (in-sample),AU-Mel-U2_d00,realistic,0.6398
+high capacity,training cases (in-sample),CA-Van-U2_d90,realistic,0.6897
+high capacity,training cases (in-sample),CA-Van-U3_d00,realistic,0.4666
+high capacity,training cases (in-sample),CH-BAS-V1_d00,realistic,0.7801
+high capacity,training cases (in-sample),CH-Zur-U1_d00,realistic,0.4253
+high capacity,training cases (in-sample),IT-ROM-U3_d90,realistic,0.7576
+high capacity,training cases (in-sample),KO-SE-U2_d00,realistic,0.4495
+high capacity,training cases (in-sample),KO-SE-V11_d00,realistic,0.5932
+high capacity,training cases (in-sample),KO-SE-V3_d15,realistic,0.4996
+high capacity,training cases (in-sample),KO-SE-V3_d45,realistic,0.5190
+high capacity,training cases (in-sample),KO-SE-V4_d00,realistic,0.5035
+high capacity,training cases (in-sample),KO-SE-V8_d15,realistic,0.6254
+high capacity,training cases (in-sample),NL-AMS-U1_d90,realistic,0.5346
+high capacity,training cases (in-sample),SG-Boo-U1_d90,realistic,0.5142
+high capacity,training cases (in-sample),UA-KY-V1_d45,realistic,0.6203
+high capacity,training cases (in-sample),UA-KY-V6_d45,realistic,0.4990
+high capacity,training cases (in-sample),UA-KY-V7_d30,realistic,0.5820
+high capacity,training cases (in-sample),UA-KY-V8_d15,realistic,0.4672
+high capacity,training cases (in-sample),US-Det-U11_d90,realistic,0.6829
+high capacity,training cases (in-sample),US-Det-U9_d90,realistic,0.5896
+high capacity,training cases (in-sample),US-Mia-U1_d90,realistic,0.8719
+high capacity,training cases (in-sample),ALL (pooled R²),idealized,0.9414
+high capacity,training cases (in-sample),ALL (pooled R²),all,0.7500
+high capacity,training cases (in-sample),ALL (pooled R²),realistic,0.6763
