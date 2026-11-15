@@ -37,6 +37,7 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 import torch  # noqa: E402
 
+from urbanwind.data import load_topo  # noqa: E402
 from urbanwind.dl import uq  # noqa: E402
 from urbanwind.dl.cache import load_cached  # noqa: E402
 from urbanwind.dl.datasets import predict_arrays  # noqa: E402
@@ -57,7 +58,8 @@ DIST_EDGES = (0.0, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0, np.inf)  # metres to the near
 DROPS = (0.0, 0.1, 0.2, 0.3)
 SPEARMAN_SAMPLE = 2_000_000  # cells drawn at random for the pooled Spearman correlation
 MAP_CASES = ("AU-Mel-U15_d90", "SG-Boo-U1_d30", "AU-Preston")  # the realistic cases S07 and S11 map
-CELL_M = {"idealized": 0.5, "realistic": 1.0}
+# native grid spacing of every case (0.5 m for all idealized and four realistic cases), from the S10 cache table
+DX = pd.read_csv(REPO_ROOT / "pipeline/S10_dl_data_pipeline/outputs/cache_summary.csv").set_index("case")["dx_native"]
 
 
 # ---------------------------------------------------------------------------- predictions
@@ -111,7 +113,10 @@ def collect(method: str, dev: pd.DataFrame, rng: np.random.Generator) -> dict:
     for i, case in enumerate(dev.index):
         truth, pred, sigma, valid = load_method(method, case)
         sub = dev.loc[case, "subset"]
-        dist = uq.periodic_wall_distance(~valid, CELL_M[sub])[valid]
+        buildings = load_topo(case) > 0  # the building raster itself (needs the raw files), on the native grid
+        if buildings.shape != valid.shape:
+            raise ValueError(f"{case}: building raster {buildings.shape} and field {valid.shape} differ")
+        dist = uq.periodic_wall_distance(buildings, float(DX[case]))[valid]
         err, sig = np.abs(truth[valid] - pred[valid]), sigma[valid]
         n = err.size
         total += n
