@@ -1,0 +1,3 @@
+method,spearman_pooled_sample,spearman_case_median,spearman_case_share_above_0.3,mae_drop_0pct,mae_drop_10pct,mae_drop_20pct,mae_drop_30pct
+ensemble,0.2956,0.1233,0.0145,0.5378,0.5065,0.4861,0.4664
+mc_dropout,0.2622,0.1675,0.0477,0.5538,0.5218,0.5026,0.4857

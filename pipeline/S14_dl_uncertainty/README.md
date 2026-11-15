@@ -1,164 +1,94 @@
-# S14 — Uncertainty and Calibration
+# S14 Uncertainty and calibration
 
-**Owner:** Ayush Aryan · **Issue:** #39 · **Depends on:** S11, S13
+Gives every predicted wind map of the final S13 model an uncertainty map, and turns it into intervals whose coverage holds on cities and layout families the model has never seen.
 
----
+| | |
+| --- | --- |
+| Inputs | the out-of-fold predictions of the three seeds of the 200-epoch U-Net (`results/preds/s13_unet_tuned_e200_seed{0,1,2}/`, not tracked); for MC dropout, the seed-0 weights (`results/checkpoints/s13_unet_tuned_e200_seed0/`) and the S10 cache |
+| Outputs | `outputs/coverage_summary.csv`, `outputs/reliability.csv`, `outputs/coverage_by_distance.csv`, `outputs/per_case_coverage_<method>.csv`, `outputs/spearman_selective.csv`; `figures/`; `results/preds/s14_<method>/<case>.npz` with `lo` and `hi` (not tracked) |
+| Code | `src/urbanwind/dl/uq.py`, `run_s14_pipeline.py`; tests in `src/urbanwind/dl/tests/test_uq.py` |
 
-## Goal
+## Method
 
-Give every predicted wind map an uncertainty map whose 90 % intervals stay calibrated on unseen cities and layout families.
+**Uncertainty maps.**
+- **Deep ensemble.** The three training seeds of the final model. The prediction is their mean and the uncertainty sigma is their standard deviation, cell by cell. Both come straight from the saved, scored predictions, so no network is run again.
+- **MC dropout.** Seed 0 with only its dropout layers active, 30 passes per case. The passes run through the project's own prediction code: mirror averaging, bilinear return to 0.5 m grids, and the building mask from the cache. GroupNorm keeps no running statistics, so switching dropout on changes nothing else.
 
----
+**Intervals (90%).** Split conformal on whole groups. The quantile q for the cases of outer fold k comes only from the cells of the other four folds, so a city or layout family never calibrates its own intervals.
 
-## Summary of Results
+| Interval | Conformity score | Interval |
+| --- | --- | --- |
+| `constant` | \|y − pred\| | pred ± q, the same width everywhere |
+| `normalised` | \|y − pred\| / (sigma + 0.05) | pred ± q (sigma + 0.05), wider where the members disagree |
+| `normalised_by_subset` (main) | the same | the same, with idealized and realistic cases calibrated separately, as their error scales differ |
 
-| Experiment | Overall 90% Coverage | Idealized Coverage | Realistic Coverage | Mean Spearman (Unc vs \|Err\|) | Selective Prediction (MAE @ 0% → 10%) | Evaluator Pooled R² | Status |
-|---|---|---|---|---|---|---|---|
-| **Deep Ensemble (3 seeds)** | **91.23%** | **91.47%** | **91.07%** | **0.1704** | **1.3378 → 1.2852 (−3.93%)** | **−0.5381** | **PASS** (Coverage in 85–95%) |
-| **MC Dropout (30 passes)** | 76.37% | 72.87% | 78.64% | 0.0236 | 1.4820 → 1.4650 (−1.15%) | −1.9651 | Under-covers (76.37%) |
-| **Target (Definition of Done)** | **85% – 95%** | **85% – 95%** | **85% – 95%** | **> 0.3** | Monotonic MAE decrease | — | **Gate Passed (Ensemble)** |
+**Checks.**
+- Coverage overall, by subset, per case and by distance to the nearest building. The distance is computed on the periodic domain.
+- An out-of-fold reliability diagram: nominal 50% to 95%, each calibrated on the other folds.
+- The Spearman correlation between sigma and the absolute error: pooled, over 2,000,000 random cells, and within each case.
+- Selective prediction: the MAE after dropping the 10%, 20% and 30% most uncertain cells.
 
----
+## Results: deep ensemble
 
-## Status
+All 482 development cases and 87,788,708 open-ground cells (`outputs/coverage_summary.csv`).
 
-| Deliverable | Status |
-|---|---|
-| `src/urbanwind/dl/uq.py` (`S13UNet`, conformal, ensemble, MC dropout, Spearman, selective) | ✅ Complete |
-| Tests (`src/urbanwind/dl/tests/test_uq.py`, 45/45 passing) | ✅ Complete |
-| Deep Ensemble of 3 S13 tuned seeds (mean & spread across 482 dev cases) | ✅ Complete |
-| MC Dropout on Seed 0 (30 stochastic passes across 482 dev cases) | ✅ Complete |
-| Split-conformal calibration on whole groups (calibrated on other folds) | ✅ Complete |
-| Coverage analysis: overall, idealized, realistic, and per-case | ✅ Complete |
-| Reliability diagram (`figures/reliability_diagram.png`) | ✅ Complete |
-| Selective prediction curve (`figures/selective_prediction.png`) | ✅ Complete |
-| Uncertainty maps beside error maps (`figures/uncertainty_maps.png`) | ✅ Complete |
-| Saved contract `.npz` files with `lo` and `hi` (`results/preds/s14_ensemble/`, `s14_mc_dropout/`) | ✅ Complete |
-| Evaluated with `urbanwind.evaluate` into `results/runs.csv` | ✅ Complete |
+| 90% interval | Coverage, all | Idealized | Realistic | Mean width, idealized (u*) | Mean width, realistic (u*) | Cases with coverage in 85% to 95% |
+| --- | --- | --- | --- | --- | --- | --- |
+| `constant` | 0.8991 | 0.9972 | 0.8799 | 2.4347 | 2.4354 | 43% |
+| `normalised` | 0.8992 | 0.9839 | 0.8826 | 1.5477 | 2.8470 | 58% |
+| `normalised_by_subset` | 0.8995 | 0.9002 | 0.8994 | 0.8568 | 3.0579 | 63% |
 
----
+- **All three reach 90% overall,** as split conformal guarantees, but only the main interval holds 90% in each subset. The constant width over-covers idealized cases (99.7%) with intervals almost three times wider than they need to be, and under-covers realistic ones (88.0%).
+- **Per case,** the main interval's coverage has a median of 0.908, with the 10th to 90th percentiles at 0.764 to 0.955 (`outputs/per_case_coverage_ensemble.csv`). Cells within a case are strongly correlated, so a whole case can sit above or below its group's quantile. The lowest single cases cover 31% (realistic) and 41% (idealized).
+- **Reliability.** Calibrated on the other folds, the coverage matches the nominal level from 50% to 95% within 0.002 for the main interval (`outputs/reliability.csv`, `figures/reliability_diagram.png`).
+- **By distance to the nearest building** (`outputs/coverage_by_distance.csv`), the main interval covers 89% to 91% from 1 m to 32 m. It covers 87.8% beyond 32 m and 74.8% within 1 m of a wall, where few cells (0.5% of the total) and the sharpest gradients are.
 
-## Method & Protocol
+| Uncertainty against error (`outputs/spearman_selective.csv`) | Ensemble |
+| --- | --- |
+| Spearman, pooled over 2,000,000 random cells | 0.2956 |
+| Spearman, median within a case | 0.1233 |
+| MAE of all cells (u*) | 0.5378 |
+| MAE after dropping the 10% most uncertain cells | 0.5065 |
+| MAE after dropping 20% | 0.4861 |
+| MAE after dropping 30% | 0.4664 |
 
-### 1 — Deep ensemble (3 seeds)
-For each development case in fold $k \in \{0, 1, 2, 3, 4\}$, we load the fold-$k$ checkpoint from each of the 3 S13 tuned seeds (`s13_unet_tuned_e200_seed{0,1,2}/fold{k}.pt`).
-The ensemble prediction is the mean across the 3 seeds, and the uncertainty map is the cell-wise standard deviation.
+- The ensemble spread is larger where the error is larger across the dataset (0.30 pooled, just below the 0.3 target), but only weakly within a case (median 0.12). It tells fast, complex regions from calm ones better than it ranks the cells inside one neighbourhood.
+- Dropping the most uncertain cells lowers the error steadily: by 6% at 10% dropped, and by 13% at 30%.
 
-```python
-ens_mean = np.mean([pred_seed0, pred_seed1, pred_seed2], axis=0)
-ens_std  = np.std([pred_seed0, pred_seed1, pred_seed2], axis=0)
-```
+## Results: MC dropout
 
-### 2 — MC dropout (seed 0, 30 passes)
-For fold $k$, the Seed 0 checkpoint is loaded in evaluation mode, with only its `Dropout2d` layers flipped to training mode (`model.eval()`, `Dropout2d.train()`).
-We execute 30 stochastic forward passes per case to obtain the Monte Carlo mean and standard deviation:
+All 482 development cases and 87,788,708 open-ground cells (`outputs/coverage_summary.csv`).
 
-```python
-model = load_s13_checkpoint("seed0/fold{k}.pt")
-mc_mean, mc_std = mc_dropout_predict(model, x, n_passes=30)
-```
+| 90% interval | Coverage, all | Idealized | Realistic | Mean width, idealized (u*) | Mean width, realistic (u*) | Cases with coverage in 85% to 95% |
+| --- | --- | --- | --- | --- | --- | --- |
+| `normalised_by_subset` | 0.8975 | 0.8984 | 0.8973 | 0.8866 | 2.6511 | 43% |
 
-> **GroupNorm invariance:** As verified in `test_uq.py`, GroupNorm maintains no running statistics across batches. Switching dropout to training mode leaves the normalization statistics completely unchanged, preserving valid activations.
+| Uncertainty against error (`outputs/spearman_selective.csv`) | MC dropout |
+| --- | --- |
+| Spearman, pooled over 2,000,000 random cells | 0.2622 |
+| Spearman, median within a case | 0.1675 |
+| MAE of all cells (u*) | 0.5538 |
+| MAE after dropping the 10% most uncertain cells | 0.5218 |
+| MAE after dropping 20% | 0.5026 |
+| MAE after dropping 30% | 0.4857 |
 
-### 3 — Split-conformal calibration on whole groups
-To ensure intervals generalize to unseen layout geometries and unfamiliar cities, conformal calibration is strictly group-aware:
-For each held-out fold $k$, the 90% error threshold $q_k$ is calibrated on the pooled absolute prediction residuals from the **other four folds** (never on the fold being scored):
-
-$$q_k = \text{Quantile}_{(1-\alpha)}\left(\left\{|y_{\text{true}} - y_{\text{pred}}| \mid \text{fold} \neq k\right\}\right), \quad \alpha = 0.10$$
-
-The prediction interval for each cell is symmetric: $[\hat{y} - q_k, \hat{y} + q_k]$.
-The thresholds obtained across the 5 outer folds were:
-- **Ensemble:** Fold 0: 2.7273, Fold 1: 2.8189, Fold 2: 2.9319, Fold 3: 2.6983, Fold 4: 2.9088 (Mean: 2.817)
-- **MC Dropout:** Fold 0: 4.0389, Fold 1: 3.5275, Fold 2: 3.8277, Fold 3: 3.8684, Fold 4: 4.1521 (Mean: 3.883)
-
-### 4 — Coverage analysis
-Coverage was verified across all 482 development cases on native open ground (building cells masked):
-- **Deep Ensemble:** Reached **91.23%** coverage on held-out folds (Idealized: 91.47%, Realistic: 91.07%). This matches the 90% theoretical guarantee and passes the gate target of [85%, 95%].
-- **MC Dropout:** Under-covered at **76.37%** (Idealized: 72.87%, Realistic: 78.64%) due to the heavy-tailed error distributions produced by dropout-induced activation variance.
-
-#### Coverage by Distance to Nearest Building (87,788,708 valid cells)
-
-| Distance Band (m) | Cell Count | 90% Conformal Interval Coverage | Gate Window [85%, 95%] |
-|---|---|---|---|
-| **0 – 1 m** | 5,654,826 | **88.83%** | PASS |
-| **1 – 2 m** | 5,625,960 | **89.13%** | PASS |
-| **2 – 4 m** | 10,599,032 | **89.73%** | PASS |
-| **4 – 8 m** | 17,657,991 | **91.19%** | PASS |
-| **8 – 16 m** | 24,143,865 | **90.79%** | PASS |
-| **16 – 32 m** | 18,946,287 | **89.69%** | PASS |
-| **> 32 m** | 5,160,747 | **85.03%** | PASS |
-
-Every spatial band sits firmly within the 85%–95% target window, demonstrating that split-conformal calibration does not suffer from local spatial miscalibration near walls or in wide plazas.
-
-### 5 — Spearman rank correlation ($\rho$)
-Spearman correlation between per-cell uncertainty ($\sigma$) and true absolute error ($|y - \hat{y}|$):
-- **Deep Ensemble:** $\rho = 0.1704$
-- **MC Dropout:** $\rho = 0.0236$
-
-**Finding:** The 3-member ensemble captures meaningful epistemic uncertainty from distinct weight-space optimization trajectories, yielding positive error tracking ($\rho \approx 0.17$). In contrast, MC dropout with a fixed $p=0.08$ rate on small convolutions acts primarily as diffuse spatial noise rather than reflecting geometric sheltering boundaries or high-shear canyon corners.
-
-### 6 — Selective prediction
-When evaluating model reliability under risk-averse operation, cells are sorted by uncertainty and the top 10% most uncertain cells are withheld from prediction:
-- Full Open-Ground MAE: **1.3378** $U/u^*$
-- MAE after dropping 10% most uncertain cells: **1.2852** $U/u^*$ (a **3.93% error reduction**)
-- At 20% dropped: **1.2291** $U/u^*$ (an **8.12% error reduction**)
-This confirms that the ensemble's uncertainty map reliably identifies the regions of highest residual error.
-
----
-
-## Artifacts and Figures
-
-Generated in `pipeline/S14_dl_uncertainty/figures/`:
-
-1. **`reliability_diagram.png`**:
-   The split-conformal calibration curve sweeping confidence levels $1 - \alpha \in [0.60, 0.98]$. The empirical coverage follows the ideal diagonal across the entire operating range, anchoring firmly at 91.23% for the 90% confidence target.
-2. **`coverage_by_distance.png`**:
-   Empirical coverage plotted across 7 wall-distance bands from 0 m to >32 m. Every band remains between 85% and 91.2%, proving calibration is uniform throughout complex urban canyon geometry.
-3. **`selective_prediction.png`**:
-   Monotonically decreasing MAE as uncertain cells are sequentially dropped from 0% to 30%, validating the utility of the uncertainty map for safety-critical wind engineering assessments.
-4. **`uncertainty_maps.png`**:
-   Four-panel visual comparison across held-out benchmark cases (`AU-Mel-U15_d90`, `US-Det-U1_d00`, `CA-Sunset`):
-   - Ground Truth LES ($U/u^*$)
-   - Deep Ensemble Prediction ($U/u^*$)
-   - Absolute Residual Error Map ($|y - \hat{y}|$)
-   - Ensemble Epistemic Uncertainty Map ($\sigma_{\text{ens}}$)
-
----
-
-## S14 Model Architecture (`S13UNet`)
-
-The S13 weights conform to the following layer specification:
-
-| Stage | Submodules | Output Channels | Operation |
-|---|---|---|---|
-| Encoder 0 | `down.0` | 24 | Two Conv3×3 (circular) + GN(8) + ReLU + Dropout2d(0.08) |
-| Encoder 1 | `down.1` | 48 | Two Conv3×3 (circular) + GN(8) + ReLU + Dropout2d(0.08) |
-| Encoder 2 | `down.2` | 96 | Two Conv3×3 (circular) + GN(8) + ReLU + Dropout2d(0.08) |
-| Encoder 3 | `down.3` | 192 | Two Conv3×3 (circular) + GN(8) + ReLU + Dropout2d(0.08) |
-| Bottleneck | `mid` | 384 | Two Conv3×3 (circular) + GN(8) + ReLU + Dropout2d(0.08) |
-| Up-Projection | `up_conv.{0-3}` | 192, 96, 48, 24 | 3×3 Circular Convolution (channel reduction) |
-| Decoder Blocks | `up_block.{0-3}` | 192, 96, 48, 24 | Two Conv3×3 (circular) + GN(8) + ReLU on concatenated skip |
-| Output Head | `head` | 1 | 1×1 Conv → Softplus (enforces $U \ge 0$) |
-
-Input channels (5):
-1. `H / 16.0`: Normalized building height
-2. `(H > 0.0)`: Binary building mask
-3. `dist / 16.0`: Periodic wall distance map
-4. `cos(wind_angle)`: Canonical cosine component
-5. `sin(wind_angle)`: Canonical sine component
-
----
-
-## Reproduce
+## Running it
 
 ```bash
-# 1. Run local test suite
-uv sync
-uv run pytest src/urbanwind/dl/tests/test_uq.py -v
-
-# 2. Run Kaggle inference (or local with GPU)
-# Loads 15 checkpoints from s13-unet-e200-weights
-# Computes ensemble mean/std, MC dropout mean/std, applies conformal calibration,
-# and writes results to results/preds/s14_ensemble/ and results/preds/s14_mc_dropout/
-python pipeline/S14_dl_uncertainty/run_s14_pipeline.py
+uv run python pipeline/S14_dl_uncertainty/run_s14_pipeline.py                # ensemble only: about 5 minutes on a CPU
+uv run python pipeline/S14_dl_uncertainty/run_s14_pipeline.py --mc-dropout   # adds MC dropout: 30 passes x 482 cases, a GPU helps
+uv run pytest -q src/urbanwind/dl/tests/test_uq.py
 ```
+
+The seed predictions are rebuilt from the weights in the Kaggle dataset `mahirm01/s13-unet-e200-weights` with `python -m urbanwind.dl.train --config pipeline/S13_hybrid/configs/unet_tuned_e200.yaml --seed <s> --repredict`.
+
+## Definition of done (issue #39)
+
+- 90% intervals cover 85% to 95% of held-out cells: met. Overall 0.8995, idealized 0.9002, realistic 0.8994.
+- Spearman correlation between uncertainty and absolute error above 0.3: not met. 0.2956 pooled, and 0.1233 within a case.
+
+## Limitations
+
+- Three ensemble members give a rough spread. The conformal step sets the interval width, so coverage does not depend on how well sigma is scaled, only on how well it ranks cells.
+- Coverage is marginal over cells. Per-case coverage varies widely, because the cells of a case share its errors.
+- The epsilon of 0.05 u* in the normalised score was fixed in advance, not tuned.

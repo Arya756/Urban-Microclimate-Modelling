@@ -1,0 +1,7 @@
+method,interval,nominal,coverage_all,mean_width_all,coverage_idealized,mean_width_idealized,coverage_realistic,mean_width_realistic,case_coverage_p10,case_coverage_median,case_coverage_p90,share_of_cases_85_to_95
+ensemble,constant,0.9000,0.8991,2.4353,0.9972,2.4347,0.8799,2.4354,0.8531,0.9456,0.9991,0.4336
+ensemble,normalised,0.9000,0.8992,2.6341,0.9839,1.5477,0.8826,2.8470,0.8594,0.9219,0.9945,0.5768
+ensemble,normalised_by_subset,0.9000,0.8995,2.6974,0.9002,0.8568,0.8994,3.0579,0.7640,0.9081,0.9552,0.6328
+mc_dropout,constant,0.9000,0.8991,2.5006,0.9972,2.4991,0.8799,2.5009,0.8527,0.9463,0.9992,0.4232
+mc_dropout,normalised,0.9000,0.8971,2.4188,0.9957,2.1311,0.8778,2.4752,0.8368,0.9438,0.9995,0.4025
+mc_dropout,normalised_by_subset,0.9000,0.8975,2.3620,0.8984,0.8866,0.8973,2.6511,0.6667,0.9096,0.9745,0.4336
